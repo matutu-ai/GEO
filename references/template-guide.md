@@ -85,9 +85,3 @@
 - 自媒体账号注册后必须先手动发布一篇文章，验证通过后才能绑定 GEO 自动发布。
 - 智能体官网一天最多 5 条。
 - 每个自媒体账号每天最多发布 5 条。
-
-### 入口
-
-- 代理产品提单登录：https://crm.g3user.com
-- 讯灵GEO推广 + Agent：https://www.xunlingai.com
-- 单独智能体产品：http://znt.xunlingai.com
