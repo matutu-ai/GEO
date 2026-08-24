@@ -48,6 +48,8 @@
 - 用中文逗号“，”隔开
 - 不出现空格或换行
 
+产品或服务描述/特点的填写框架与行业案例见 [references/profile-examples.md](references/profile-examples.md)。
+
 | 画像字段 | 填写建议 |
 |---|---|
 | 画像选择 | 选择和业务相关的画像 |
