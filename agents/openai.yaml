@@ -1,0 +1,3 @@
+interface:
+  display_name: "GEO核心词与画像套用模版"
+  short_description: "按 GEO 核心词与画像模板配置关键词、画像和发布策略"
