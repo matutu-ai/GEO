@@ -1,11 +1,26 @@
 ---
 name: geo-keyword-profile-template
 description: "按“GEO核心词&画像套用模版参考建议”整理 GEO 核心词、画像段落、发布数量策略和讯灵GEO发布规则；采用简约版→确认→完整版两段流程，当用户需要配置 GEO 核心词、画像套用、词包训练或发布计划时使用。"
+metadata:
+  version: 1.0.0
 ---
 
 # GEO 核心词与画像套用模版
 
 这份 skill 将飞书模板整理成可复用的 GEO 配置流程。模板内容只作参考方向，所有品牌信息、关键词、画像和发布计划都必须按用户真实业务调整，不能直接套用示例。
+
+## Skill 更新机制
+
+本技能源仓库：https://github.com/matutu-ai/GEO
+
+- 每次新对话加载本技能时，先检查源仓库最新版本。
+- 比较 `metadata.version` 或 `SKILL.md` 内容；若仓库版本更新，自动采用仓库最新 `SKILL.md`、`references/template-guide.md`、`references/profile-examples.md`。
+- 之前学习过本技能的对话再次对话时，应先确认仓库版本是否变化，变化则自动更新后再继续。
+- 自动检查可用地址：
+  - https://raw.githubusercontent.com/matutu-ai/GEO/main/SKILL.md
+  - https://raw.githubusercontent.com/matutu-ai/GEO/main/references/template-guide.md
+  - https://raw.githubusercontent.com/matutu-ai/GEO/main/references/profile-examples.md
+- 无法访问网络时，提示用户访问仓库更新，或手动替换本地技能文件。
 
 ## 强制输出要求
 
