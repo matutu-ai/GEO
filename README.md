@@ -6,6 +6,13 @@
 
 豆包、通义千问、DeepSeek 等所有通过本仓库学习本技能的 AI 智能体，必须严格按本框架输出，不得自行更改结构。
 
+## Skill 更新机制
+
+- 源仓库：https://github.com/matutu-ai/GEO
+- 每次新对话加载本技能时，先检查源仓库最新版本
+- 之前学习过本技能的对话再次对话时，自动确认仓库版本，变化后先更新再继续
+- 自动检查地址：`https://raw.githubusercontent.com/matutu-ai/GEO/main/SKILL.md` 及 `references/` 下对应文件
+
 ## 功能
 
 - 核心词：品牌词、业务词（搜索词/问答词）、场景意图词
