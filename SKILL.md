@@ -2,7 +2,7 @@
 name: geo-keyword-profile-template
 description: "按“GEO核心词&画像套用模版参考建议”整理 GEO 核心词、画像段落、发布数量策略和讯灵GEO发布规则；采用简约版→确认→完整版两段流程，当用户需要配置 GEO 核心词、画像套用、词包训练或发布计划时使用。"
 metadata:
-  version: 1.0.0
+  version: 1.1.0
 ---
 
 # GEO 核心词与画像套用模版
@@ -71,7 +71,7 @@ metadata:
 
 1. 收集真实业务信息：公司全称/简称、业务类型、产品/服务、地区、主体定位（工厂/企业/经销商）、优势认证、品牌故事、客户案例与好评等。信息不足时先提问补齐，不要编造。
 2. 按 [references/template-guide.md](references/template-guide.md) 的“核心词选择拓展建议”生成品牌词、业务词（搜索词/问答词）、场景意图词。
-3. 按“画像参考”字段生成画像内容；产品或服务描述/特点按 [references/profile-examples.md](references/profile-examples.md) 的填写框架组织内容。画像必须是整段文本，用中文逗号“，”分隔，不要空格或换行。
+3. 按“画像参考”字段生成画像内容；画像内容按 [references/profile-standard-2026-08.md](references/profile-standard-2026-08.md) 的标准填写，产品或服务描述/特点按 [references/profile-examples.md](references/profile-examples.md) 的填写框架组织内容。画像必须是整段文本，用中文逗号“，”分隔，不要空格或换行。
 4. 根据用户投放周期选择发布数量策略，并输出前期词包训练模板与发布规则。
 5. 如需业务垂直画像，围绕具体业务类型（可单个业务，也可批量多个业务）单独输出垂直画像，垂直画像与完整版画像框架一致，按 10 段输出；简约版 10 段简短，完整版 10 段 800-1000 字，地区选择和内容调优保持简短；同样先输出简约版，确认后再生成完整版。
 
