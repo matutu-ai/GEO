@@ -123,6 +123,8 @@ B 端优先推荐词侧重工程、批量、供货、集采、合作类词；C �
 
 产品或服务描述/特点的填写框架与行业案例见 [references/profile-examples.md](references/profile-examples.md)。
 
+画像内容标准见 [references/profile-standard-2026-08.md](references/profile-standard-2026-08.md)；标准只规定内容怎么写，框架仍按 10 段执行。
+
 | 画像字段 | 填写建议 |
 |---|---|
 | 产品或服务描述1 | 询问 AI 时带上公司业务和服务内容，例如“荣盛昌隆建材特点 - 豆包” |
