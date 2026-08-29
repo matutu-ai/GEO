@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Keyword",
+  "type": "object",
+  "required": ["keyword", "category", "intent"],
+  "properties": {
+    "keyword": { "type": "string" },
+    "category": { "type": "string" },
+    "intent": { "type": "string" },
+    "audience": { "type": "string" },
+    "scenario": { "type": "string" },
+    "funnel_stage": { "type": "string" },
+    "commercial_value": { "type": "integer", "minimum": 0, "maximum": 10 },
+    "geo_value": { "type": "integer", "minimum": 0, "maximum": 10 },
+    "competition": { "type": "string" },
+    "evidence": { "type": "string" },
+    "priority": { "type": "integer", "minimum": 0, "maximum": 100 }
+  }
+}
