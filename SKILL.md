@@ -1,86 +1,110 @@
 ---
 name: geo-keyword-profile-template
-description: "生成 GEO 核心词、九大板块画像、发布策略和讯灵GEO发布规则；先输出简约版，再由用户选择下一步方向。"
+description: "企业 GEO 增长闭环引擎：资料清洗、证据管理、企业 Profile、行业与竞争研究、搜索意图、关键词矩阵、九大画像、垂直画像、内容矩阵、动态发布、GEO 验证与缺口分析。"
 metadata:
-  version: 2.0.0
+  version: 3.0.0
 ---
 
-# GEO 核心词与画像套用模版
+# GEO V3：企业 GEO 增长闭环版
 
-本技能适用于豆包、通义千问、DeepSeek 等所有 AI 智能体。加载后必须严格按本文件执行，不自行改变结构。
+本 Skill 适用于豆包、通义千问、DeepSeek、Codex 等所有 AI 智能体，用于把企业资料转化为可执行、可验证、可批量运行、可持续优化的 GEO 增长系统。
 
-## 学习方式
+## 执行架构
 
-- 先只读本文件，掌握核心规则和流程。
-- 生成核心词前，按需读 `references/template-guide.md`。
-- 生成画像前，读 `references/profile-standard-2026-08.md`；产品或服务描述/特点可再读 `references/profile-examples.md`。
-- 详细参考不提前全部加载，需要哪个板块再读哪个。
+DATA → EVIDENCE → ENTITY → INDUSTRY → COMPETITOR → INTENT → KEYWORD → PROFILE → VERTICAL → CONTENT → PUBLISH → VALIDATE → GAP → OPTIMIZE
 
-## 强制输出
+## 输入
 
-- 所有画像严格按九大板块输出：
-  1. 产品或服务描述
-  2. 产品或服务特点
-  3. 品牌故事
-  4. 用户痛点
-  5. 信任背书
-  6. 客户案例
-  7. 社会贡献
-  8. 客户评价
-  9. 创始人介绍
+- 企业资料：docx / xlsx / 纯文本 / 网页链接 / 图片
+- 用户指令：生成、调整、批量、验证、同步
+
+## 工作模式
+
+- Interactive Mode：新企业，按步骤等待用户确认。
+- Batch Mode：已确认结构的企业，一次性自动执行。
+
+默认：
+
+- 新企业：Interactive
+- 批量企业：Batch
+
+## 模块路由
+
+- 资料接收：`workflows/intake.md`
+- 资料缺失检测：`workflows/data-gap-detection.md`
+- 企业 Profile：`workflows/company-profile.md` + `schemas/geo-profile.schema.json`
+- 证据系统：`references/evidence-rules.md` + `schemas/evidence.schema.json`
+- 行业研究：`workflows/industry-research.md`
+- 竞争研究：`workflows/competitor-research.md`
+- 搜索意图：`workflows/search-intent.md`
+- 关键词引擎：`workflows/keyword-engine.md` + `schemas/keyword.schema.json`
+- 九大画像：`workflows/nine-profile.md` + `references/profile-standard-2026-08.md`
+- 垂直画像：`workflows/vertical-profile.md`
+- 实体图谱：`schemas/entity-map.schema.json`
+- 内容矩阵：`workflows/content-matrix.md` + `schemas/content-matrix.schema.json`
+- 动态发布：`workflows/publishing-strategy.md`
+- GEO 验证：`workflows/geo-validation.md`
+- 缺口分析：`workflows/gap-analysis.md`
+- 质量规则：`references/quality-rules.md`
+- 输出模板：`templates/`
+
+## 强制规则
+
+- 所有画像严格按九大板块输出。
 - 不省略、不增删、不改变结构。
-- 只使用可核验数据，逐项标注来源。
-- 未核验项标注：【需贵司提供真实佐证】。
-- 禁用“第一、最、顶级、领先、卓越”等绝对化用语。
-- 不虚构客户、案例、评价、数据。
+- 真实性优先 > 完整性。
+- 事实优先 > AI 推测。
+- 可验证性优先 > 文案漂亮。
+- 不虚构客户、案例、资质、数据、评价、创始人经历、生产能力、市场排名。
+- 未验证信息标注证据等级和【需贵司提供真实佐证】。
+- 禁用绝对化用语。
+- 无法执行的验证输出 `NOT_AVAILABLE`，禁止伪造结果。
 
-## 核心词规则
+## 核心流程
 
-- 品牌词：公司全称、公司简称+业务、英文缩写+商标、品牌简称。
-- 业务词=搜索词，用于搜索词推广；问答词=核心词训练问句，单独输出。
-- 业务词和问答词一律不带地区；地区只放在场景意图词或地区信息中。
-- 业务词流程：豆包分类 → 按业务方向分组 → B端/C端优先推荐 → “我需要一个某业务我会搜哪些词”扩展 → 优先训练词+说明。
-- 场景意图词使用“需要一个…的…”句式。
-
-## 交付流程
-
-1. 收集客户资料；缺失项标注待补充，不编造。
-2. 先输出简约版：核心词 + 九大板块简短版 + 发布策略 + 发布规则。
-3. 简约版完成后输出决策点：
-   1. 扩写完整版（每个板块 800-1000 字）
-   2. 生成业务垂直画像（可单个，也可批量多个业务）
-   3. 只调整核心词
-   4. 直接定稿简约版
-   5. 补充资料
-4. 等待用户选择后再执行，不提前展开完整版。
-
-## 垂直画像
-
-- 与完整版画像框架一致，按九大板块输出。
-- 简约版九大板块简短；完整版九大板块 800-1000 字。
-
-## 发布与同步
-
-- 发布数量策略：季度版、半年版、年度版、特殊版/医疗版四档。
-- 讯灵GEO发布规则按 `references/template-guide.md` 执行，不包含平台入口。
-- 用户说“上传到库 / 同步到库里 / 更新到库里”时，同步 GitHub `matutu-ai/GEO`；版本变化时更新 `metadata.version`。
-
-## 学习完成提示
-
-学习完成后输出：
-
-“我已学习完 GEO 核心词与画像套用模版。快把你客户的内容丢给我，让我帮你干这个活。”
+1. 资料清洗
+2. 事实与证据识别
+3. 企业 GEO Profile
+4. 行业研究
+5. 竞争研究
+6. 用户搜索意图
+7. 关键词矩阵
+8. 九大画像
+9. 业务垂直画像
+10. 内容矩阵
+11. 动态发布策略
+12. GEO 验证
+13. GEO 缺口分析
+14. 内容补强
+15. 再次验证
 
 ## 每步操作后的下一步提示
 
-每个操作节点完成后，必须停下并输出下一步选择，等待用户确认后再继续：
+每个操作节点完成后，必须停下并输出下一步选择，等待用户确认后再继续。
 
-1. 学习完成：提示用户提供客户内容。
-2. 资料收集完成：确认关键信息是否准确，用户可选择“开始生成简约版”或“补充资料”。
-3. 简约版完成：输出五项决策点（扩写完整版 / 生成垂直画像 / 只调整核心词 / 直接定稿 / 补充资料）。
-4. 完整版完成：用户可选择“生成垂直画像 / 调整核心词 / 定稿 / 继续其他客户 / 同步仓库”。
-5. 垂直画像完成：用户可选择“继续生成其他垂直画像 / 调整内容 / 定稿 / 同步仓库”。
-6. 核心词调整完成：用户可选择“确认继续 / 继续调整 / 同步仓库”。
-7. 同步完成：用户可选择“继续生成 / 调整 / 结束”。
+- 学习完成：提示提供客户内容。
+- 资料收集完成：确认或补充资料。
+- 简约版完成：扩写完整版 / 垂直画像 / 调整核心词 / 定稿 / 补充资料。
+- 完整版完成：垂直画像 / 调整 / 定稿 / 继续其他客户 / 同步仓库。
+- 垂直画像完成：继续其他垂直画像 / 调整 / 定稿 / 同步仓库。
+- 同步完成：继续生成 / 调整 / 结束。
 
-未得到用户选择前，不自动进入下一步。
+## 输出分层
+
+1. Executive Summary
+2. GEO Profile
+3. Keyword Matrix
+4. Nine Profiles
+5. Vertical Profiles
+6. Content Matrix
+7. GEO Strategy
+8. Validation
+9. Gap Queue
+
+## 同步
+
+用户说“上传到库 / 同步到库里 / 更新到库里”时，同步 GitHub `matutu-ai/GEO`；版本变化时更新 `metadata.version`。
+
+## 学习完成提示
+
+“我已学习完 GEO V3 企业增长闭环版。快把你客户的内容丢给我，让我帮你干这个活。”
