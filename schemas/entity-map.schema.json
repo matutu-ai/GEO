@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Entity Map",
+  "type": "object",
+  "properties": {
+    "brand": { "type": "string" },
+    "company": { "type": "string" },
+    "products": { "type": "array", "items": { "type": "string" } },
+    "services": { "type": "array", "items": { "type": "string" } },
+    "users": { "type": "array", "items": { "type": "string" } },
+    "scenarios": { "type": "array", "items": { "type": "string" } },
+    "pain_points": { "type": "array", "items": { "type": "string" } },
+    "solutions": { "type": "array", "items": { "type": "string" } },
+    "cases": { "type": "array", "items": { "type": "string" } },
+    "evidence": { "type": "array", "items": { "$ref": "evidence.schema.json" } },
+    "competitors": { "type": "array", "items": { "type": "string" } }
+  }
+}
