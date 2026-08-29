@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "GEO Company Profile",
+  "type": "object",
+  "required": ["company", "missing_information", "risk_flags"],
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "brand_names": { "type": "array", "items": { "type": "string" } },
+        "company_type": { "type": "string" },
+        "industry": { "type": "string" },
+        "sub_industry": { "type": "string" },
+        "location": { "type": "string" },
+        "founded_year": { "type": ["integer", "null"] }
+      }
+    },
+    "products": { "type": "array", "items": { "type": "string" } },
+    "services": { "type": "array", "items": { "type": "string" } },
+    "business_models": { "type": "array", "items": { "type": "string" } },
+    "target_customers": { "type": "array", "items": { "type": "string" } },
+    "target_regions": { "type": "array", "items": { "type": "string" } },
+    "use_cases": { "type": "array", "items": { "type": "string" } },
+    "pain_points": { "type": "array", "items": { "type": "string" } },
+    "advantages": { "type": "array", "items": { "type": "string" } },
+    "differentiators": { "type": "array", "items": { "type": "string" } },
+    "competitors": { "type": "array", "items": { "type": "string" } },
+    "evidence": { "type": "array", "items": { "$ref": "evidence.schema.json" } },
+    "search_intents": { "type": "array", "items": { "type": "string" } },
+    "keywords": { "type": "array", "items": { "$ref": "keyword.schema.json" } },
+    "vertical_businesses": { "type": "array", "items": { "type": "string" } },
+    "content_opportunities": { "type": "array", "items": { "type": "string" } },
+    "missing_information": { "type": "array", "items": { "type": "string" } },
+    "risk_flags": { "type": "array", "items": { "type": "string" } }
+  }
+}
