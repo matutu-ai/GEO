@@ -16,6 +16,8 @@
 - `references/template-guide.md`：核心词、发布策略、发布规则
 - `references/profile-standard-2026-08.md`：画像内容标准
 - `references/profile-examples.md`：产品或服务描述/特点框架
+- `workflows/`：模块化执行流程
+- `schemas/`：统一数据结构
 
 ## 给豆包的提示词
 
