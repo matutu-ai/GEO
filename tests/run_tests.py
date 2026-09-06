@@ -17,6 +17,7 @@ SCENARIOS = [
 ]
 
 REQUIRED = [
+    "INDEX.md",
     "SKILL.md",
     "schemas/geo-profile.schema.json",
     "schemas/evidence.schema.json",
@@ -43,7 +44,14 @@ REQUIRED = [
     "references/quality-rules.md",
     "templates/company-profile.md",
     "templates/client-intake-table.md",
-    "templates/client-corpus.md",
+    "templates/client-corpus-single-file.md",
+    "templates/client-corpus/README.md",
+    "templates/client-corpus/00-当前进度.md",
+    "templates/client-corpus/01-事实与证据.md",
+    "templates/client-corpus/02-定稿关键词.md",
+    "templates/client-corpus/03-画像正文.md",
+    "templates/client-corpus/04-缺失清单.md",
+    "templates/client-corpus/05-更新日志.md",
     "templates/nine-profile.md",
     "templates/vertical-profile.md",
     "templates/keyword-matrix.md",

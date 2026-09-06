@@ -2,7 +2,7 @@
 name: geo-keyword-profile-template
 description: "企业 GEO 增长闭环引擎：资料清洗、证据管理、企业 Profile、行业与竞争研究、搜索意图、关键词矩阵、九大画像、垂直画像、内容矩阵、动态发布、GEO 验证与缺口分析。"
 metadata:
-  version: 3.0.3
+  version: 3.0.4
 ---
 
 # GEO V3：企业 GEO 增长闭环版
@@ -28,26 +28,12 @@ DATA → EVIDENCE → ENTITY → INDUSTRY → COMPETITOR → INTENT → KEYWORD 
 - 新企业：Interactive
 - 批量企业：Batch
 
-## 模块路由
+## 文件加载
 
-- 资料接收：`workflows/intake.md` + `templates/client-intake-table.md`
-- 资料缺失检测：`workflows/data-gap-detection.md`
-- 企业 Profile：`workflows/company-profile.md` + `schemas/geo-profile.schema.json`
-- 证据系统：`references/evidence-rules.md` + `schemas/evidence.schema.json`
-- 行业研究：`workflows/industry-research.md`
-- 竞争研究：`workflows/competitor-research.md`
-- 搜索意图：`workflows/search-intent.md`
-- 关键词引擎：`workflows/keyword-engine.md` + `schemas/keyword.schema.json`
-- 九大画像：`workflows/nine-profile.md` + `references/profile-standard-2026-08.md`
-- 垂直画像：`workflows/vertical-profile.md`
-- 实体图谱：`schemas/entity-map.schema.json`
-- 内容矩阵：`workflows/content-matrix.md` + `schemas/content-matrix.schema.json`
-- 动态发布：`workflows/publishing-strategy.md`
-- GEO 验证：`workflows/geo-validation.md`
-- 缺口分析：`workflows/gap-analysis.md`
-- 客户语料库：`workflows/client-corpus.md` + `templates/client-corpus.md`
-- 质量规则：`references/quality-rules.md`
-- 输出模板：`templates/`
+- 入口：只读本文件 `SKILL.md`。
+- 路由：需要执行哪个模块时，先查 `INDEX.md`，只读取对应的一个或两个文件，不一次加载全部 `references/`、`schemas/`、`workflows/`、`templates/`。
+- 客户语料库：恢复时先只读 `GEO客户语料库/{客户简称}/00-当前进度.md`，执行任务时再按 `INDEX.md` 的客户语料库路由读取对应分文件。
+- 记忆口诀：先读索引、再读最小文件、更新只写变化。
 
 ## 强制规则
 
@@ -60,7 +46,7 @@ DATA → EVIDENCE → ENTITY → INDUSTRY → COMPETITOR → INTENT → KEYWORD 
 - 未验证信息标注证据等级和【需贵司提供真实佐证】。
 - 禁用绝对化用语。
 - 无法执行的验证输出 `NOT_AVAILABLE`，禁止伪造结果。
-- 每个客户生成内容时自动维护一份本地《客户简称-GEO语料库.md》，后续调整和训练沿用同一份文件，不虚构、不遗漏证据等级。
+- 每个客户生成内容时自动维护本地《客户简称-GEO语料库》：有本地文件能力的平台用目录分文件，无文件能力平台用单文件；后续调整和训练沿用同一份语料，不虚构、不遗漏证据等级，只写变化文件或块，不整份重写。
 - GitHub 同步仅仓库所有者本人可执行；客户对话、普通用户对话和第三方平台 AI 不得执行，也不得提供“同步仓库”选项。
 
 ## 核心流程
@@ -86,7 +72,7 @@ DATA → EVIDENCE → ENTITY → INDUSTRY → COMPETITOR → INTENT → KEYWORD 
 每个操作节点完成后，必须停下并输出下一步选择，等待用户确认后再继续。
 
 - 学习完成：先输出仓库框架分析摘要，再提示提供客户内容，并询问是否需要《客户资料填写表》。
-- 资料收集完成：自动生成简约版，并自动创建《客户简称-GEO语料库.md》，不再额外等待确认。
+- 资料收集完成：自动生成简约版，并自动创建《客户简称-GEO语料库》，不再额外等待确认。
 - 简约版完成：完整版词和画像 / 垂直业务画像 / 其他业务推荐方向 / 调整 / 定稿 / 补充资料。
 - 完整版完成（普通用户）：垂直画像 / 调整 / 定稿 / 继续其他客户 / 结束。
 - 完整版完成（仓库所有者）：垂直画像 / 调整 / 定稿 / 继续其他客户 / 同步仓库。
@@ -107,7 +93,7 @@ DATA → EVIDENCE → ENTITY → INDUSTRY → COMPETITOR → INTENT → KEYWORD 
 ## 标准交互流程
 
 1. 学习完成后，先输出框架分析摘要，再提示用户提交初始资料，并询问是否需要《客户资料填写表》。
-2. 用户提交初始资料，或确认不需要表格后，自动生成简约版，并自动创建本地《客户简称-GEO语料库.md》，不再额外等待确认。
+2. 用户提交初始资料，或确认不需要表格后，自动生成简约版，并自动创建本地《客户简称-GEO语料库》，不再额外等待确认。
 3. 简约版完成后，提示下一步：
    1. 生成完整版词和画像
    2. 生成垂直业务画像
@@ -120,13 +106,15 @@ DATA → EVIDENCE → ENTITY → INDUSTRY → COMPETITOR → INTENT → KEYWORD 
 ## 本地客户语料库
 
 - 创建：客户资料收集完成并生成简约版时自动创建第一版，无需用户额外确认。
-- 更新：每次完整版、垂直画像、调整、定稿或补充资料完成后，自动更新同一份语料库，并报告版本号。
-- 保存：Codex 等有本地文件能力的平台，保存到本地目录 `GEO客户语料库/{客户简称}/`；豆包、通义千问、DeepSeek 等无文件能力平台，在当轮末尾输出完整 Markdown 内容供用户保存，不输出摘要代替。
-- 内容：按 `templates/client-corpus.md`，必须包含客户档案、事实与证据库、缺失与待确认项、定稿关键词、定稿画像正文、内容红线、更新日志。
+- 存储：Codex 等有本地文件能力的平台，保存到目录 `GEO客户语料库/{客户简称}/`，分文件模板见 `templates/client-corpus/`：`00-当前进度.md`、`01-事实与证据.md`、`02-定稿关键词.md`、`03-画像正文.md`、`04-缺失清单.md`、`05-更新日志.md`。
+- 无文件能力平台：豆包、通义千问、DeepSeek 等用单文件模板 `templates/client-corpus-single-file.md`；首次创建或用户明确要求完整导出时输出全文，平时只输出“本次变更内容”和新的“当前进度与任务队列”，不整份重复输出。
+- 内容：必须包含客户档案、事实与证据库、缺失与待确认项、定稿关键词、定稿画像正文、内容红线、当前进度与任务队列、更新日志。
+- 更新：每次完整版、垂直画像、调整、定稿或补充资料完成后，自动增量更新对应分文件，追加更新日志并报告版本号，不整份重写。
 - 用途：客户后续做优化、训练、生成新垂直画像或补充资料时，可直接把这份语料库喂给 AI，避免重新收集资料。
-- 自动读取：客户下次使用时，用户提供语料库文件，或本地存在 `GEO客户语料库/{客户简称}/` 时，AI 先自动读取语料库并输出恢复摘要，不要求用户重新提交客户资料。
-- 自动续做：读取语料库后，按语料库“当前进度与任务队列”自动继续未完成任务；每完成一个节点仍停下等待用户选择。
-- 缺项同步：用户补充缺失资料后，AI 自动把新增事实写入同一份语料库，更新缺失清单、任务队列、版本号和更新日志；该操作只更新客户本地语料库，不等于 GitHub 同步。
+- 自动读取：客户下次使用时，用户提供语料库，或本地存在 `GEO客户语料库/{客户简称}/` 时，AI 先自动读取 `00-当前进度.md` 并输出恢复摘要，不要求用户重新提交客户资料。
+- 按需读取：恢复摘要后，执行哪个任务再读对应分文件；不一次读取全部客户文件，不重读已归档全文。
+- 自动续做：读取当前进度后，按“当前进度与任务队列”自动继续未完成任务；每完成一个节点仍停下等待用户选择。
+- 缺项同步：用户补充缺失资料后，AI 自动把新增事实写入事实与证据分文件，更新缺失清单、任务队列、版本号和更新日志；该操作只更新客户本地语料库，不等于 GitHub 同步。
 
 ## 输出分层
 

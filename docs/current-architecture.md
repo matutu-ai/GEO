@@ -23,16 +23,16 @@
 - 业务垂直画像
 - 发布策略
 - 讯灵GEO发布规则
-- 本地客户语料库（自动创建、下次自动读取续做、补充后自动回写）
+- 本地客户语料库（自动创建、目录分文件、增量读写、下次先读当前进度自动续做、补充后自动回写）
 
 ## 当前工作流
 
 1. 学习技能
 2. 收集企业资料
 3. 输出简约版
-4. 自动创建《客户简称-GEO语料库.md》
+4. 自动创建《客户简称-GEO语料库》目录分文件
 5. 用户选择下一步
-6. 输出完整版 / 垂直画像 / 调整，并更新语料库
+6. 输出完整版 / 垂直画像 / 调整，并增量更新语料库
 
 ## 当前工具
 
@@ -46,7 +46,7 @@
 - `references/profile-standard-2026-08.md`
 - `references/profile-examples.md`
 - `templates/client-intake-table.md`
-- `templates/client-corpus.md`
+- `templates/client-corpus/` 与 `templates/client-corpus-single-file.md`
 
 ## 当前强制规则
 
