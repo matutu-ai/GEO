@@ -66,6 +66,12 @@ for scenario in SCENARIOS:
     if missing:
         failures.append(f"{scenario}: missing {missing}")
 
+single_file = (ROOT / "templates/client-corpus-single-file.md").read_text(encoding="utf-8")
+if "## 0 当前进度与任务队列（速读块）" not in single_file:
+    failures.append("client corpus single-file template: missing quick-resume section 0")
+if "## 9 当前进度与任务队列" in single_file:
+    failures.append("client corpus single-file template: duplicate progress section remains")
+
 for schema_name in [
     "geo-profile.schema.json",
     "evidence.schema.json",

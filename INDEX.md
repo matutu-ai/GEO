@@ -9,6 +9,7 @@
 3. 执行任务时按需加载：不用 `references/` 全部内容，不用 `schemas/` 全部内容，不读 `tests/`、`docs/`、`examples/`、`LEARN.md` 等辅助文件。
 4. 客户语料库不自动下载、不自动读取；用户确认使用后，先只读 `{客户简称}/00-当前进度.md`；执行哪个任务，再读对应分文件。
 5. 更新只写有变化的块或文件，不整份重写语料库。
+6. AI 学习提速（通用）：学习阶段只投喂或只读取 `SKILL.md` 和本索引；豆包等无目录读取能力平台由用户只投喂这两个文件，语料库单文件恢复只投喂第 0 节速读块，需要哪一节就让用户只粘贴哪一节。
 
 ## 文件路由
 
@@ -22,7 +23,7 @@
 | `templates/client-intake-table.md` | 客户资料填写表 | 用户确认需要表格时 | 小 |
 | `workflows/client-corpus.md` | 客户语料库读写流程 | 创建、读取、更新语料库时 | 小 |
 | `templates/client-corpus/` | 语料库分文件模板 | 创建客户语料库时 | 小 |
-| `templates/client-corpus-single-file.md` | 语料库单文件导出模板 | 无文件平台完整导出时 | 中 |
+| `templates/client-corpus-single-file.md` | 语料库单文件模板（第 0 节为速读块） | 无文件平台首次创建、完整导出、续做恢复时 | 中 |
 | `workflows/data-gap-detection.md` | 缺失检测标签规则 | 清洗资料、判断缺项时 | 小 |
 | `workflows/company-profile.md` + `schemas/geo-profile.schema.json` | 企业 Profile 结构 | 生成企业 Profile 时 | 小 |
 | `references/evidence-rules.md` + `schemas/evidence.schema.json` | 证据等级与字段 | 登记事实证据时 | 小 |
@@ -59,5 +60,7 @@
 | `03-画像正文.md` | 简约版、完整版、垂直画像定稿正文 | 调整画像、训练复用、新画像前读 |
 | `04-缺失清单.md` | 缺失与待确认项 | 判断能否继续任务、向客户索要资料时读 |
 | `05-更新日志.md` | 每次变更记录与版本号 | 版本追溯、恢复摘要时读 |
+
+单文件模式：第 0 节为“当前进度与任务队列（速读块）”，续做恢复时只投喂或只读取第 0 节；执行任务需要事实、关键词或画像正文时，再让用户只粘贴对应小节。
 
 记忆口诀：先读索引、再读最小文件、更新只写变化。
