@@ -1,0 +1,4 @@
+interface:
+  display_name: Real Human Portrait
+  short_description: Generate realistic human portrait prompts with natural imperfections.
+  default_prompt: Create or refine a human portrait prompt that preserves real skin texture, subtle asymmetry, natural light, and photographic limitations.
