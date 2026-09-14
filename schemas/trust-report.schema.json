@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Trust Report",
+  "type": "object",
+  "required": ["总分", "Expertise", "Experience", "Authority", "Trustworthiness", "缺失", "优化建议"],
+  "properties": {
+    "总分": {"type": "integer", "minimum": 0, "maximum": 100},
+    "Expertise": {"type": "integer", "minimum": 0, "maximum": 25},
+    "Experience": {"type": "integer", "minimum": 0, "maximum": 25},
+    "Authority": {"type": "integer", "minimum": 0, "maximum": 25},
+    "Trustworthiness": {"type": "integer", "minimum": 0, "maximum": 25},
+    "缺失": {"type": "array", "items": {"type": "string"}},
+    "优化建议": {"type": "array", "items": {"type": "string"}}
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Company Profile V3.1",
+  "type": "object",
+  "required": ["企业名称", "企业定位", "主营业务", "目标客户", "服务区域", "核心能力", "应用场景", "竞争优势", "业务边界"],
+  "properties": {
+    "企业名称": {"type": "string"},
+    "企业定位": {"type": "string"},
+    "主营业务": {"type": "array", "items": {"type": "string"}},
+    "目标客户": {"type": "array", "items": {"type": "string"}},
+    "服务区域": {"type": "array", "items": {"type": "string"}},
+    "核心能力": {"type": "array", "items": {"type": "string"}},
+    "应用场景": {"type": "array", "items": {"type": "string"}},
+    "竞争优势": {"type": "array", "items": {"type": "string"}},
+    "业务边界": {"type": "array", "items": {"type": "string"}}
+  }
+}

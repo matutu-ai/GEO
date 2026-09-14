@@ -1,6 +1,10 @@
 import json
+import subprocess
 import sys
+import tempfile
+import zipfile
 from pathlib import Path
+from xml.etree import ElementTree as ET
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -19,11 +23,17 @@ SCENARIOS = [
 REQUIRED = [
     "INDEX.md",
     "SKILL.md",
+    "main.py",
+    "input/company.json",
     "schemas/geo-profile.schema.json",
     "schemas/evidence.schema.json",
     "schemas/keyword.schema.json",
     "schemas/entity-map.schema.json",
     "schemas/content-matrix.schema.json",
+    "schemas/company-profile-v3.1.schema.json",
+    "schemas/product-profile.schema.json",
+    "schemas/intent-keyword-matrix.schema.json",
+    "schemas/trust-report.schema.json",
     "workflows/intake.md",
     "workflows/client-corpus.md",
     "workflows/data-gap-detection.md",
@@ -38,6 +48,15 @@ REQUIRED = [
     "workflows/publishing-strategy.md",
     "workflows/geo-validation.md",
     "workflows/gap-analysis.md",
+    "workflows/01_company_analysis.md",
+    "workflows/02_product_analysis.md",
+    "workflows/03_intent_analysis.md",
+    "workflows/04_persona_generation.md",
+    "workflows/05_trust_analysis.md",
+    "workflows/06_keyword_matrix.md",
+    "workflows/07_content_strategy.md",
+    "workflows/08_geo_report.md",
+    "workflows/fast_path.md",
     "references/evidence-rules.md",
     "references/keyword-rules.md",
     "references/geo-rules.md",
@@ -72,17 +91,62 @@ if "## 0 当前进度与任务队列（速读块）" not in single_file:
 if "## 9 当前进度与任务队列" in single_file:
     failures.append("client corpus single-file template: duplicate progress section remains")
 
+fast_path = (ROOT / "workflows" / "fast_path.md").read_text(encoding="utf-8")
+for marker in ["Fact_Packet", "不生成文章", "先询问是否更新客户语料库"]:
+    if marker not in fast_path:
+        failures.append(f"fast path: missing {marker}")
+
 for schema_name in [
     "geo-profile.schema.json",
     "evidence.schema.json",
     "keyword.schema.json",
     "entity-map.schema.json",
     "content-matrix.schema.json",
+    "company-profile-v3.1.schema.json",
+    "product-profile.schema.json",
+    "intent-keyword-matrix.schema.json",
+    "trust-report.schema.json",
 ]:
     try:
         json.loads((ROOT / "schemas" / schema_name).read_text(encoding="utf-8"))
     except Exception as exc:
         failures.append(f"{schema_name}: invalid JSON {exc}")
+
+with tempfile.TemporaryDirectory() as temp_dir:
+    output_dir = Path(temp_dir) / "output"
+    result = subprocess.run(
+        [sys.executable, str(ROOT / "main.py"), "--output", str(output_dir)],
+        text=True,
+        capture_output=True,
+    )
+    if result.returncode:
+        failures.append(f"main.py failed: {result.stderr or result.stdout}")
+    else:
+        xlsx = output_dir / "keyword_matrix.xlsx"
+        docx = output_dir / "persona_report.docx"
+        report = output_dir / "geo_strategy_report.md"
+        if not all(path.is_file() for path in [xlsx, docx, report]):
+            failures.append("main.py: required output files missing")
+        else:
+            spreadsheet_ns = {"x": "http://schemas.openxmlformats.org/spreadsheetml/2006/main"}
+            word_ns = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
+            with zipfile.ZipFile(xlsx) as archive:
+                sheet = ET.fromstring(archive.read("xl/worksheets/sheet1.xml"))
+            headers = ["".join(cell.itertext()) for cell in sheet.find(".//x:row", spreadsheet_ns).findall("x:c", spreadsheet_ns)]
+            if headers != ["关键词", "关键词类型", "用户需求", "搜索意图", "对应画像", "内容建议", "优先级"]:
+                failures.append("keyword matrix: invalid headers")
+            with zipfile.ZipFile(docx) as archive:
+                document = ET.fromstring(archive.read("word/document.xml"))
+            document_text = "\n".join("".join(node.itertext()) for node in document.findall(".//w:p", word_ns))
+            for heading in ["一、品牌画像", "二、产品画像", "三、用户痛点画像", "四、场景画像", "五、行业画像", "六、信任画像", "七、案例画像", "八、客户评价画像", "九、专家画像"]:
+                if heading not in document_text:
+                    failures.append(f"persona report: missing {heading}")
+            report_text = report.read_text(encoding="utf-8")
+            for heading in ["## 当前AI认知状态", "## 当前缺失", "## 优化方向", "## 内容建设计划", "## 30/60/90天执行计划"]:
+                if heading not in report_text:
+                    failures.append(f"strategy report: missing {heading}")
+            if "【需企业提供真实佐证】" not in document_text:
+                failures.append("truthfulness check: missing evidence marker")
 
 if failures:
     print("\n".join(failures))

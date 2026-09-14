@@ -1,93 +1,59 @@
-# GEO Skill 当前架构审计
+# GEO Skill V3.1 架构
 
-## 当前功能
+## 定位
 
-- 企业资料输入后生成核心词
-- 九大板块画像输出
-- 简约版 / 完整版两段交付
-- 业务垂直画像
-- 发布数量策略
-- 讯灵GEO发布规则
-- GitHub 同步权限：仅仓库所有者
+`GEO-BD` 是诊断医生：发现企业 AI 可见度问题并给出处方。
 
-## 当前输入
+`GEO Skill` 是执行系统：将企业已确认资料转化为企业 AI 认知资产和可执行 GEO 优化方案。
 
-- 企业资料：docx、xlsx、纯文本、网页链接、图片等
-- 用户指令：生成简约版、完整版、垂直画像、调整核心词、同步仓库（仅所有者）
+## 执行链路
 
-## 当前输出
+```text
+企业资料
+→ Company_Profile
+→ Product_Profile
+→ Intent_Keyword_Matrix
+→ Nine_Personas
+→ Trust_Report
+→ GEO 场景词库
+→ 内容建设计划
+→ GEO 优化执行方案
+```
 
-- 核心词表
-- 九大板块画像
-- 简约版 / 完整版 Markdown
-- 业务垂直画像
-- 发布策略
-- 讯灵GEO发布规则
-- 本地客户语料库（不自动下载/读取/创建/更新，先询问用户再执行、目录分文件、单文件第 0 节速读块、按节投喂、增量读写、确认后先读当前进度续做）
+## 快速路径
 
-## 当前工作流
+默认任务使用 `workflows/fast_path.md`：一份 `Fact_Packet` 在同一次上下文中派生全部默认资产，避免平台反复读取同一资料。快速路径不自动外部检索，不生成文章正文，不读取客户语料库。
 
-1. 学习技能
-2. 已有语料库时先询问是否使用，确认后读取恢复；否则收集企业资料
-3. 输出简约版
-4. 询问是否加入客户语料库，确认后创建《客户简称-GEO语料库》目录分文件
-5. 用户选择下一步
-6. 输出完整版 / 垂直画像 / 调整，先询问是否更新语料库，确认后增量更新
+## 模块
 
-## 当前工具
+| 编号 | 模块 ID | 工作流 | 作用 |
+| --- | --- | --- | --- |
+| 01 | company-intelligence | `01_company_analysis.md` | 定义企业是谁、做什么、服务谁、边界是什么 |
+| 02 | product-model | `02_product_analysis.md` | 定义产品价值、场景、能力与交付边界 |
+| 03 | user-intent-engine | `03_intent_analysis.md` | 生成问题、采购、信任与场景词 |
+| 04 | persona-engine | `04_persona_generation.md` | 生成九大画像 |
+| 05 | trust-engine | `05_trust_analysis.md` | 评估 EEAT 资料完整度 |
+| 06 | keyword-matrix | `06_keyword_matrix.md` | 导出 GEO 场景词库 |
+| 07 | content-strategy | `07_content_strategy.md` | 按需规划 AI 知识资产 |
+| 08 | geo-report | `08_geo_report.md` | 输出 30/60/90 天优化方案 |
 
-- Codex / Agent 本地执行
-- GitHub 仓库同步（仅仓库所有者）
-- 无外部数据源强制连接
+## 可运行交付
 
-## 当前模板
+`python main.py` 从 `input/company.json` 生成：
 
-- `references/template-guide.md`
-- `references/profile-standard-2026-08.md`
-- `references/profile-examples.md`
-- `templates/client-intake-table.md`
-- `templates/client-corpus/` 与 `templates/client-corpus-single-file.md`
+```text
+output/
+├── keyword_matrix.xlsx
+├── persona_report.docx
+└── geo_strategy_report.md
+```
 
-## 当前强制规则
+默认样例只提供“德州拓晟通风设备有限公司”名称，用于证明系统能在资料不足时保留完整结构、标记缺失，而不会虚构产品、资质、案例和客户。
 
-- 九大板块画像
-- 业务词 / 问答词分离
-- 业务词和问答词不带地区
-- 不虚构事实、客户、案例、评价、数据
-- 未核验信息标注【需贵司提供真实佐证】
-- 禁用绝对化用语
+## 质量边界
 
-## 当前缺陷
-
-- 无统一企业 Profile 数据结构
-- 无证据等级系统
-- 无行业 / 竞争研究模块
-- 无搜索意图分析
-- 关键词无矩阵化字段
-- 无内容矩阵
-- 无 GEO 验证接口
-- 无 Gap Analysis
-- 无批量执行模式
-- 无自动化测试
-
-## 可以复用的模块
-
-- 九大板块画像体系
-- 简约版 / 完整版流程
-- 业务垂直画像
-- 业务词分类规则
-- 画像内容标准
-- 发布数量策略
-- 讯灵GEO发布规则
-- 真实性规则
-
-## 不允许破坏的兼容能力
-
-- 简约版企业画像
-- 完整版企业画像
-- 九大画像
-- 业务垂直画像
-- 核心关键词
-- 发布策略
-- 真实性规则
-- 原有模板
+- 所有缺失事实使用 `【需企业提供真实佐证】`。
+- 场景词必须具有用户需求、搜索意图和对应画像。
+- EEAT 分数是资料完整度。
+- 文章生成不属于默认交付；必须由用户明确要求且绑定画像、场景词、用户意图与真实证据。
+- 默认产物完成后只输出缺失清单和一个下一步问题；补充资料是否回写客户语料库必须单独确认。

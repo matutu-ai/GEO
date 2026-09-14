@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Intent Keyword Matrix",
+  "type": "object",
+  "required": ["关键词", "关键词类型", "用户需求", "搜索意图", "对应画像", "内容建议", "优先级"],
+  "properties": {
+    "关键词": {"type": "string"},
+    "关键词类型": {"enum": ["用户问题词", "采购决策词", "信任验证词", "应用场景词", "品牌词"]},
+    "用户需求": {"type": "string"},
+    "搜索意图": {"type": "string"},
+    "对应画像": {"type": "string"},
+    "内容建议": {"type": "string"},
+    "优先级": {"type": "string"}
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Product Profile",
+  "type": "object",
+  "required": ["产品名称", "产品类别", "目标客户", "应用场景", "解决问题", "核心优势", "技术特点", "交付方式", "限制边界"],
+  "properties": {
+    "产品名称": {"type": "string"},
+    "产品类别": {"type": "string"},
+    "目标客户": {"type": "array", "items": {"type": "string"}},
+    "应用场景": {"type": "array", "items": {"type": "string"}},
+    "解决问题": {"type": "array", "items": {"type": "string"}},
+    "核心优势": {"type": "array", "items": {"type": "string"}},
+    "技术特点": {"type": "array", "items": {"type": "string"}},
+    "交付方式": {"type": "array", "items": {"type": "string"}},
+    "限制边界": {"type": "array", "items": {"type": "string"}}
+  }
+}
