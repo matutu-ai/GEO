@@ -57,6 +57,21 @@ REQUIRED = [
     "workflows/07_content_strategy.md",
     "workflows/08_geo_report.md",
     "workflows/fast_path.md",
+    "prompts/00_start_prompt.md",
+    "prompts/01_material_collection_prompt.md",
+    "prompts/02_missing_detection_prompt.md",
+    "prompts/03_company_profile_prompt.md",
+    "prompts/04_industry_research_prompt.md",
+    "prompts/05_search_intent_prompt.md",
+    "prompts/06_keyword_engine_prompt.md",
+    "prompts/07_persona_prompt.md",
+    "prompts/08_vertical_persona_prompt.md",
+    "prompts/09_content_matrix_prompt.md",
+    "prompts/10_publish_strategy_prompt.md",
+    "prompts/11_geo_verify_prompt.md",
+    "prompts/12_gap_analysis_prompt.md",
+    "prompts/13_final_report_prompt.md",
+    "prompts/_interaction_contract.md",
     "references/evidence-rules.md",
     "references/keyword-rules.md",
     "references/geo-rules.md",
@@ -95,6 +110,25 @@ fast_path = (ROOT / "workflows" / "fast_path.md").read_text(encoding="utf-8")
 for marker in ["Fact_Packet", "不生成文章", "先询问是否更新客户语料库"]:
     if marker not in fast_path:
         failures.append(f"fast path: missing {marker}")
+
+prompt_files = sorted((ROOT / "prompts").glob("*.md"))
+numbered_prompts = sorted(path for path in prompt_files if path.name[0].isdigit())
+if len(numbered_prompts) != 14:
+    failures.append(f"interactive prompts: expected 14 numbered files, found {len(numbered_prompts)}")
+if not (ROOT / "prompts" / "_interaction_contract.md").is_file():
+    failures.append("interactive prompts: missing shared contract")
+for prompt_file in numbered_prompts:
+    prompt_text = prompt_file.read_text(encoding="utf-8")
+    if "完成后暂停" not in prompt_text and prompt_file.name != "00_start_prompt.md":
+        failures.append(f"interactive prompt: missing pause rule in {prompt_file.name}")
+if "Interactive Mode" not in (ROOT / "SKILL.md").read_text(encoding="utf-8"):
+    failures.append("skill: missing Interactive Mode routing")
+if "00 → 01 → 02 → 03 → 05 → 06 → 07 → 08 → 12 → 13" not in (ROOT / "SKILL.md").read_text(encoding="utf-8"):
+    failures.append("skill: missing interactive main route")
+contract = (ROOT / "prompts" / "_interaction_contract.md").read_text(encoding="utf-8")
+for marker in ["provided", "source_verified", "unknown", "完成后必须暂停", "外部网页或搜索"]:
+    if marker not in contract:
+        failures.append(f"interactive contract: missing {marker}")
 
 for schema_name in [
     "geo-profile.schema.json",

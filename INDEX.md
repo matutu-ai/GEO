@@ -47,6 +47,38 @@ fast_path（只要默认三份产物时优先）
 | 客户语料库 | `workflows/client-corpus.md` | 确认后才读写 |
 | 快速执行 | `workflows/fast_path.md` | 默认任务和无目录平台的最小投喂 |
 
+## Interactive Prompt 路由
+
+只输入客户名称或用户要求逐步引导时，先读取 `prompts/_interaction_contract.md`，再按主链执行。每步执行后暂停；可选分支只有用户明确要求时进入：
+
+```text
+00_start
+→ 01_material_collection
+→ 02_missing_detection
+→ 03_company_profile
+→ 05_search_intent
+→ 06_keyword_engine
+→ 07_persona
+→ 08_vertical_persona
+→ 12_gap_analysis
+→ 13_final_report
+```
+
+可选分支：`04_industry_research`、`09_content_matrix`、`10_publish_strategy`、`11_geo_verify`。完成分支后回到主链，不重复执行已完成节点。
+
+| Prompt | 绑定能力 | 读取时机 |
+| --- | --- | --- |
+| `prompts/00_start_prompt.md` | 启动、模式分流、资料请求 | 仅输入客户名称或开始交互流程 |
+| `prompts/01` - `prompts/03` | 资料采集、缺失检测、企业画像 | 收到初始资料 |
+| `prompts/04` - `prompts/06` | 行业研究、意图、关键词 | 资料画像完成后；外部研究需确认 |
+| `prompts/07` - `prompts/08` | 九大画像、垂直画像 | 关键词矩阵完成后 |
+| `prompts/09` - `prompts/10` | 内容矩阵、发布策略 | 用户明确要求时 |
+| `prompts/11` - `prompts/12` | 真实验证、缺口处方 | 有真实记录或用户明确复测时 |
+| `prompts/13` | 最终报告 | 默认模块完成后 |
+| `prompts/_interaction_contract.md` | 模式分流、证据状态、暂停和分支门槛 | 所有交互 Prompt 前 |
+
+交互提示文件只负责用户引导与输出格式；诊断计算、字段规则和导出仍以 `workflows/`、`schemas/` 和 `main.py` 为准。
+
 ## 豆包、千问等平台
 
 1. 先投喂 `SKILL.md` 和 `INDEX.md`，完成框架学习。

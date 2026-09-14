@@ -1,3 +1,4 @@
 interface:
-  display_name: "GEO V3.1 企业AI可见度执行系统"
-  short_description: "生成企业AI认知模型、场景词库、九大画像与GEO优化执行方案"
+  display_name: "GEO V3.1.1 企业AI可见度交互执行系统"
+  short_description: "交互引导企业资料采集，生成AI认知模型、场景词库、九大画像与GEO方案"
+  default_prompt: "使用 $geo-keyword-profile-template，从客户名称开始交互式完成企业 GEO 分析。"

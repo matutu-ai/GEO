@@ -1,11 +1,11 @@
 ---
 name: geo-keyword-profile-template
-description: "企业 GEO V3.1 执行系统：将企业资料转化为 AI 认知模型、场景词库、九大画像、EEAT 信任诊断和 GEO 优化执行方案。"
+description: "交互式引导企业资料采集，并生成 AI 认知模型、GEO 场景词库、九大画像和优化方案。"
 metadata:
-  version: 3.1.0
+  version: 3.1.1
 ---
 
-# GEO Skill V3.1：企业 AI 可见度执行系统
+# GEO Skill V3.1.1：企业 AI 可见度执行系统
 
 GEO-BD 负责诊断问题和开优化处方；本 Skill 负责把经确认的企业资料转为可用于 GEO 运营的 AI 认知资产。
 
@@ -56,6 +56,12 @@ GEO-BD 负责诊断问题和开优化处方；本 Skill 负责把经确认的企
 用户只需要关键词、九大画像和优化方案时，读取 `workflows/fast_path.md`，将全部企业资料先归一化为一份 `Fact_Packet`，在同一次上下文中完成默认模块，不重复读取或复述同一资料。默认不生成文章、内容正文、发布计划或外部检索结果。
 
 无目录读取能力的平台一次投喂：`SKILL.md`、`INDEX.md`、`workflows/fast_path.md` 和企业资料包。只有用户明确要求内容建设、外部检索或旧版模块时，才追加对应文件。
+
+## 交互式流程提示系统
+
+用户只输入客户名称时，先读取 `prompts/_interaction_contract.md`，再进入 `prompts/00_start_prompt.md`。默认主链为 `00 → 01 → 02 → 03 → 05 → 06 → 07 → 08 → 12 → 13`；`04`、`09`、`10`、`11` 是用户确认后才进入的可选分支。每一步只输出当前阶段、本次结论、待补资料和一个下一步动作，然后暂停；不得把未确认的行业推断、外部检索或模拟平台结果写成事实。
+
+交互式流程与快速路径互斥：只有客户名称或资料不完整时使用 Interactive Mode；用户已提供完整资料且明确要一次完成时使用 Fast Path。两种模式共享 Company_Profile、Product_Profile、Intent_Keyword_Matrix、Nine_Personas、Trust_Report 和真实性规则。
 
 ## 运行流程
 
