@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["protocol_version", "facts", "conflicts"],
+  "properties": {
+    "protocol_version": {"const": "4.0.0"},
+    "facts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["fact_id", "field", "value", "status", "source", "evidence", "confidence", "created_by"],
+        "properties": {
+          "fact_id": {"type": "string"},
+          "field": {"type": "string"},
+          "status": {"enum": ["CONFIRMED", "INFERRED", "UNKNOWN", "CONFLICTED", "FORBIDDEN"]},
+          "source": {"type": "string"},
+          "evidence": {"type": "array"},
+          "confidence": {"enum": ["high", "medium", "low"]},
+          "created_by": {"const": "fact_normalization"}
+        }
+      }
+    },
+    "conflicts": {"type": "array"}
+  },
+  "additionalProperties": false
+}

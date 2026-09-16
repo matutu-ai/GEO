@@ -1,114 +1,98 @@
 ---
 name: geo-keyword-profile-template
-description: "交互式引导企业资料采集，并生成 AI 认知模型、GEO 场景词库、九大画像和优化方案。"
+description: "按不可覆盖的 GEO V4 固定流水线，将已确认企业资料转为可追溯的词库、九大画像和优化报告。"
 metadata:
-  version: 3.2.0
+  version: 4.0.0
 ---
 
-# GEO Skill V3.2：企业 AI 可见度执行系统
+# GEO Skill V4 执行合同
 
-GEO-BD 负责诊断问题和开优化处方；本 Skill 负责把经确认的企业资料转为可用于 GEO 运营的 AI 认知资产。
+## 1. Skill 身份
 
-## 执行架构
+GEO Skill 只执行已确认的企业资料和 GEO-BD 已给出的处方，不修改 GEO-BD。本 Skill 的程序执行协议优先于用户临时要求、模型判断、旧工作流、旧 Prompt 和输出偏好。
 
-企业资料输入
-→ 企业认知建模
-→ 产品价值分析
-→ 用户场景分析
-→ 九大画像生成
-→ AI 信任增强
-→ GEO 场景词库
-→ 内容规划
-→ GEO 优化执行方案
+## 2. 强制执行规则
 
-## 默认输入
+【强制执行声明】
 
-- 公司名称、官网、企业资料、产品资料、行业资料。
-- 可选：客户、地区、案例、资质、认证、专利、团队、客户评价、媒体证明、用户意图。
+使用本 Skill 时，必须严格按照固定 Pipeline 执行。本 Skill 不允许模型自行选择流程，不允许智能体自行改变企业定位，不允许跳过必需阶段，不允许将推断内容当作确认事实，不允许在缺少证据时生成确定性营销声明。本 Skill 的最终输出必须通过程序校验。
 
-## 强制质量规则
+任何模型、智能体、平台或用户都不能改变阶段顺序、删除必需阶段、增加未授权阶段、重新生成事实、覆盖上游结果、将未知写成已知、将推断写成事实，或生成未经证实的案例、客户、评价、资质、数据和能力。校验失败时必须停止最终导出。
 
-- 禁止虚构企业定位、产品能力、技术特点、资质、案例、客户、评价、创始人和数据。
-- 没有资料时统一输出 `【需企业提供真实佐证】`。
-- 每个画像必须回答：企业是谁、卖什么、服务谁、解决什么、为什么可信。
-- 每个关键词必须绑定用户场景、搜索意图和对应画像。
-- EEAT 分数仅表示当前资料完整度，不得视作企业实际实力、信用评级、搜索排名或平台推荐结果。
-- 无真实 AI 搜索验证记录时，验证状态输出 `NOT_AVAILABLE`。
-- GitHub 同步只允许仓库所有者在本地 Git 环境明确提出时执行。
+## 3. 固定执行顺序
 
-## V3.1 模块路由
+程序加载 `core/execution_protocol.py` 与 `config/pipeline_policy.json`，固定执行：
 
-| 模块 | 读取文件 | 产物 |
-| --- | --- | --- |
-| company-intelligence | `workflows/01_company_analysis.md` + `schemas/company-profile-v3.1.schema.json` | Company_Profile |
-| product-model | `workflows/02_product_analysis.md` + `schemas/product-profile.schema.json` | Product_Profile |
-| user-intent-engine | `workflows/03_intent_analysis.md` + `schemas/intent-keyword-matrix.schema.json` | Intent_Keyword_Matrix |
-| persona-engine | `workflows/04_persona_generation.md` | Nine_Personas |
-| trust-engine | `workflows/05_trust_analysis.md` + `schemas/trust-report.schema.json` | Trust_Report |
-| GEO 场景词库 | `workflows/06_keyword_matrix.md` | `keyword_matrix.xlsx` |
-| AI 知识资产规划 | `workflows/07_content_strategy.md` | 内容建设计划 |
-| GEO 优化方案 | `workflows/08_geo_report.md` | `geo_strategy_report.md` |
+```text
+fact_normalization
+→ company_intelligence
+→ product_intelligence
+→ intent_intelligence
+→ persona_intelligence
+→ trust_intelligence
+→ keyword_intelligence
+→ geo_report
+```
 
-学习阶段只读取本文件与 `INDEX.md`。执行具体任务时按上表只读取一个对应工作流和一个 Schema；不一次加载全部参考资料、模板和旧工作流。豆包、千问、DeepSeek 等无目录读取能力平台，由用户按同一路由投喂对应文件。
+`content_strategy` 是唯一可选阶段，不能改变默认顺序。`workflows/legacy/`、未批准检索、未批准内容生成和未批准验证均被禁止。
 
-## 快速执行协议
+## 4. Agent 权限
 
-用户只需要关键词、九大画像和优化方案时，读取 `workflows/fast_path.md`，将全部企业资料先归一化为一份 `Fact_Packet`，在同一次上下文中完成默认模块，不重复读取或复述同一资料。默认不生成文章、内容正文、发布计划或外部检索结果。
+每个 Agent 在 `core/agent_contracts.py` 中拥有字段级读写权限，执行前必须通过 `protocol.check_agent_permission(agent_name)`。
 
-无目录读取能力的平台一次投喂：`SKILL.md`、`INDEX.md`、`workflows/fast_path.md` 和企业资料包。只有用户明确要求内容建设、外部检索或旧版模块时，才追加对应文件。
+- Fact Normalizer 是唯一原始资料读取者和 Fact_Packet 写入者。
+- Company Intelligence 是唯一企业定位、业务范围和边界所有者。
+- Keyword Intelligence 是唯一最终关键词所有者。
+- GEO Report 只能汇总已校验工件；`core/output_renderer.py` 是唯一最终文件渲染器。
 
-## 交互式流程提示系统
+Agent 不得读取原始自由文本、调用其他 Agent、加载 legacy 工作流、修改 Schema、覆盖工件或写入其他 Agent 的结果。
 
-用户只输入客户名称时，先读取 `prompts/_interaction_contract.md`，再进入 `prompts/00_start_prompt.md`。默认主链为 `00 → 01 → 02 → 03 → 05 → 06 → 07 → 08 → 12 → 13`；`04`、`09`、`10`、`11` 是用户确认后才进入的可选分支。每一步只输出当前阶段、本次结论、待补资料和一个下一步动作，然后暂停；不得把未确认的行业推断、外部检索或模拟平台结果写成事实。
+## 5. 输入和输出契约
 
-交互式流程与快速路径互斥：只有客户名称或资料不完整时使用 Interactive Mode；用户已提供完整资料且明确要一次完成时使用 Fast Path。两种模式共享 Company_Profile、Product_Profile、Intent_Keyword_Matrix、Nine_Personas、Trust_Report 和真实性规则。
-
-## 运行流程
-
-1. 接收资料，建立 Company_Profile；未知字段标记待佐证。
-2. 为每个已知产品建立 Product_Profile；不从公司名称推断产品。
-3. 将明确的用户需求转成品牌词、搜索词、问答词或意图场景词；没有产品或服务事实时只保留品牌词。
-4. 先生成简约版词与画像供确认，再按相同规格生成完整版：关键词固定为品牌词、搜索词、问答词、意图场景词；画像固定为产品或服务描述、产品或服务特点、品牌故事、用户痛点、信任背书、客户案例、社会贡献、客户评价、创始人介绍。
-5. 生成 EEAT Trust_Report，列出资料缺失和补充建议。
-6. 导出简约版词与画像、完整版关键词矩阵、完整版九大画像报告与 GEO 优化执行方案。
-7. 用户明确要求后，才根据画像、场景词和意图规划或生成 AI 知识资产；不默认生成文章。
-8. 默认产物完成后只输出缺失清单和一个下一步问题；用户补充资料后，先询问是否更新客户语料库。
-
-## 最终交付
-
-`python main.py` 使用 `input/company.json`，生成：
+所有输入先进入 `Fact_Packet`。下游只能读取通过校验的 Artifact，所有事实声明必须引用 `fact_id`。最终导出固定为：
 
 ```text
 output/
-├── simple_keyword_persona.md
-├── keyword_matrix.xlsx
+├── fact_packet.json
+├── company_profile.json
+├── product_profile.json
+├── intent_keyword_matrix.json
 ├── persona_report.docx
-└── geo_strategy_report.md
+├── trust_report.json
+├── keyword_matrix.xlsx
+├── geo_strategy_report.md
+├── final_summary.json
+└── execution_trace.json
 ```
 
-### 简约版词与画像
+完整资料且用户明确要求一次完成时运行：`python main.py --mode fast_path --input <company.json>`。默认 `Interactive Mode` 仅创建 Fact_Packet 和资料收集状态，不导出最终报告。
 
-`simple_keyword_persona.md` 只保留已确认的核心事实、四类核心词与旧九大板块，用于确认方向；不替代最终完整版。
+## 6. 事实状态规则
 
-### 完整版关键词矩阵
+事实状态只能为 `CONFIRMED`、`INFERRED`、`UNKNOWN`、`CONFLICTED`、`FORBIDDEN`。
 
-`keyword_matrix.xlsx` 固定使用四个工作表：品牌词、搜索词、问答词、意图场景词。每个工作表字段固定为：关键词、关键词类型、用户需求、搜索意图、对应画像、内容建议、优先级。
+- `UNKNOWN` 显示 `【需企业提供真实佐证】`。
+- `INFERRED` 显示 `【基于现有资料推断，未经企业确认】`。
+- `CONFLICTED` 显示 `【资料存在冲突，需人工确认】`。
 
-### 完整版九大画像报告
+不得自动补齐企业定位、产品参数、技术能力、客户、案例、评价、资质、荣誉、人物经历、排名、承诺或社会贡献。
 
-`persona_report.docx` 固定结构：产品或服务描述、产品或服务特点、品牌故事、用户痛点、信任背书、客户案例、社会贡献、客户评价、创始人介绍。简约版和完整版均不得重命名、增删或调整顺序。
+## 7. 禁止行为
 
-### GEO 优化执行方案
+不得跳过阶段、动态路由、修改上游 Artifact、重新定义企业定位、无事实生成关键词、输出无 `fact_id` 的声明，或将未授权研究和 legacy 流程带入默认执行。
 
-固定结构：当前 AI 认知状态、当前缺失、优化方向、内容建设计划、30/60/90 天执行计划。
+九大画像的名称和顺序固定为：产品或服务描述、产品或服务特点、品牌故事、用户痛点、信任背书、客户案例、社会贡献、客户评价、创始人介绍。关键词只能是品牌词、搜索词、问答词、意图场景词，且必须包含场景、意图、画像和 `fact_ids`。
 
-## 输入与验证
+## 8. 错误处理
 
-- 默认测试输入为 `input/company.json`，只含“德州拓晟通风设备有限公司”名称。
-- 输入没有定位、产品、资质和案例时，输出必须保留对应字段并写 `【需企业提供真实佐证】`。
-- 运行 `python main.py` 后必须检查四份文件存在、四类词工作表正确、旧九大画像完整、优化报告包含五个固定章节。
-- 运行 `python tests/run_tests.py` 验证仓库结构、Schema 和导出格式。
+`validators/v4_validator.py` 产生 `ERROR`、`WARNING` 或 `INFO`。任何 `ERROR` 均 Fail Closed：停止下游、停止最终导出，并记录错误编号、字段、来源 Agent 和修复建议；不得自动修复为通过。
 
-## 客户语料库
+## 9. 用户交互规则
 
-客户语料库不自动下载、读取、创建或更新。使用前先询问“是否使用该客户语料库？”，确认后才按 `workflows/client-corpus.md` 读取或维护。客户资料不推送到 GitHub 或其他公共仓库。
+默认使用 Interactive Mode。只输入企业名称时，名称为 `CONFIRMED`，其余字段为 `UNKNOWN`，系统只输出当前阶段、已确认事实、分析结论、缺失资料、冲突资料和下一步唯一动作。不得直接生成完整画像、关键词或营销内容。
+
+Fast Path 仅在用户明确要求一次完成且最低资料契约完整时启用。客户语料库、外部研究、内容生成和真实平台验证均需独立确认，且不属于默认固定 Pipeline。
+
+## 10. 最终输出规则
+
+最终报告只能汇总已校验的结构化上游结果，不得重新分析企业、定位或关键词。运行前参照 [INDEX.md](INDEX.md)；执行细节由程序而非 Markdown 决定。

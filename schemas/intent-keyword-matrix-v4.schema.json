@@ -1,0 +1,7 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["intents", "fact_ids"],
+  "properties": {"intents": {"type": "array"}, "fact_ids": {"type": "array"}},
+  "additionalProperties": false
+}

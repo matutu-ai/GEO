@@ -1,0 +1,7 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["company_name", "pipeline_id", "artifact_ids", "status"],
+  "properties": {"company_name": {"type": "string"}, "pipeline_id": {"const": "geo-v4-fixed-pipeline"}, "artifact_ids": {"type": "array"}, "status": {"const": "VALIDATED"}},
+  "additionalProperties": false
+}

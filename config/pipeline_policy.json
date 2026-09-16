@@ -1,0 +1,10 @@
+{
+  "default_pipeline": "geo-v4-fixed-pipeline",
+  "legacy_enabled": false,
+  "allow_dynamic_routing": false,
+  "allow_agent_override": false,
+  "allow_unapproved_tools": false,
+  "require_schema_validation": true,
+  "require_traceability": true,
+  "fail_closed": true
+}

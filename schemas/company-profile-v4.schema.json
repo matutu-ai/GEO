@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["company_name", "positioning", "main_businesses", "target_customers", "service_regions", "business_boundaries", "fact_ids"],
+  "properties": {
+    "company_name": {"type": "object"}, "positioning": {"type": "object"},
+    "main_businesses": {"type": "object"}, "target_customers": {"type": "object"},
+    "service_regions": {"type": "object"}, "business_boundaries": {"type": "object"},
+    "fact_ids": {"type": "array", "minItems": 1}
+  },
+  "additionalProperties": false
+}

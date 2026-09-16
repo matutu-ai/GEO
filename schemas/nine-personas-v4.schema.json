@@ -1,0 +1,7 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["units", "fact_ids"],
+  "properties": {"units": {"type": "array", "minItems": 9, "maxItems": 9}, "fact_ids": {"type": "array"}},
+  "additionalProperties": false
+}

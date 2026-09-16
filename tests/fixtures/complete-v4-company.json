@@ -1,0 +1,31 @@
+{
+  "company_name": "测试企业（仅验收数据）",
+  "official_website": "https://example.invalid",
+  "positioning": "工业设备服务商",
+  "main_businesses": ["工业设备服务"],
+  "target_customers": ["工业企业"],
+  "service_regions": ["全国"],
+  "core_capabilities": ["按需方案设计"],
+  "use_cases": ["车间设备改造"],
+  "competitive_advantages": ["按需方案"],
+  "business_boundaries": ["具体适配条件以现场确认"],
+  "products": [{
+    "name": "工业设备方案",
+    "category": "工业服务",
+    "target_customers": ["工业企业"],
+    "use_cases": ["车间设备改造"],
+    "problems_solved": ["设备适配问题"],
+    "advantages": ["按需方案"],
+    "technical_features": ["需以真实技术资料确认"],
+    "delivery_methods": ["现场交付"],
+    "boundaries": ["具体适配条件以现场确认"]
+  }],
+  "user_intents": [{
+    "keyword": "工业设备方案怎么选",
+    "keyword_type": "问答词",
+    "user_scenario": "车间设备改造前的采购评估",
+    "search_intent": "采购判断",
+    "persona_unit": "用户痛点"
+  }],
+  "evidence": {"qualifications": ["仅验收用资料索引"], "cases": ["仅验收用案例索引"]}
+}

@@ -1,26 +1,12 @@
-# GEO V3 Tests
+# GEO V4 Tests
 
-## 场景
+## 覆盖范围
 
-1. 完整制造企业资料
-2. 资料严重缺失企业
-3. 本地服务企业
-4. B2B工业企业
-5. 多个产品企业
-6. 多个业务垂直企业
-7. 存在虚假/未经验证信息的资料
-8. 批量企业输入
-
-## 验证内容
-
-- Profile
-- Evidence
-- Keywords
-- Intent
-- Nine Profiles
-- Vertical Profile
-- Content Matrix
-- Quality Check
+- 默认 Interactive Mode 只创建 Fact_Packet 并暂停。
+- 完整 Fast Path 按八个固定阶段运行并导出 10 份工件。
+- Pipeline 策略禁用 dynamic routing、Agent override 和 legacy 流程。
+- JSON Schema 文件可解析，输出结构、固定四类词和九大画像可验证。
+- 25 项协议测试覆盖缺失资料、冲突资料、字段越权、跳过阶段、无来源关键词、未标记推断、虚构背书、覆盖上游工件与绕过 Renderer 等行为。
 
 ## 运行
 
@@ -28,6 +14,4 @@
 python tests/run_tests.py
 ```
 
-## 说明
-
-当前测试为模块完整性与 schema 可解析性测试。实际 GEO 效果验证依赖外部 AI Search / Web Search，未连接时输出 `NOT_AVAILABLE`。
+所有 `ERROR` 必须 Fail Closed；不连接外部 AI 平台或 Web Search，也不会生成平台验证结论。

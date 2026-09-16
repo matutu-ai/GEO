@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["protocol_version", "pipeline_id", "mode", "required_stages", "optional_stages", "forbidden_stages", "rules"],
+  "properties": {
+    "protocol_version": {"const": "4.0.0"},
+    "pipeline_id": {"const": "geo-v4-fixed-pipeline"},
+    "mode": {"enum": ["interactive", "fast_path"]},
+    "required_stages": {"type": "array", "minItems": 8},
+    "optional_stages": {"type": "array"},
+    "forbidden_stages": {"type": "array"},
+    "rules": {"type": "object"}
+  },
+  "additionalProperties": false
+}

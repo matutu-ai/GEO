@@ -1,4 +1,4 @@
 interface:
-  display_name: "GEO V3.2 企业AI可见度交互执行系统"
-  short_description: "交互生成简约版与完整版四类词、旧九大画像和GEO方案"
-  default_prompt: "使用 $geo-keyword-profile-template，从客户名称开始交互式完成企业 GEO 分析。"
+  display_name: "GEO V4 固定执行系统"
+  short_description: "按固定事实链和校验规则生成可追溯 GEO 资产"
+  default_prompt: "使用 $geo-keyword-profile-template，严格按 GEO V4 执行合同处理企业资料；资料不足时仅创建 Fact_Packet 并收集缺失资料。"
