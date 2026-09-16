@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate GEO V3.1 knowledge assets from explicit enterprise input only."""
+"""Generate GEO V3.2 simple and full GEO knowledge assets from explicit input only."""
 
 import argparse
 import html
@@ -14,9 +14,10 @@ MISSING = "【需企业提供真实佐证】"
 KEYWORD_HEADERS = [
     "关键词", "关键词类型", "用户需求", "搜索意图", "对应画像", "内容建议", "优先级"
 ]
+KEYWORD_TYPES = ["品牌词", "搜索词", "问答词", "意图场景词"]
 PERSONA_HEADINGS = [
-    "一、品牌画像", "二、产品画像", "三、用户痛点画像", "四、场景画像", "五、行业画像",
-    "六、信任画像", "七、案例画像", "八、客户评价画像", "九、专家画像",
+    "一、产品或服务描述", "二、产品或服务特点", "三、品牌故事", "四、用户痛点", "五、信任背书",
+    "六、客户案例", "七、社会贡献", "八、客户评价", "九、创始人介绍",
 ]
 
 
@@ -84,6 +85,32 @@ def product_profiles(data):
     return rows
 
 
+def text_from_mapping(value, keys):
+    if not isinstance(value, dict):
+        return MISSING
+    for key in keys:
+        if nonempty(value.get(key)):
+            return text_or_missing(value.get(key))
+    return MISSING
+
+
+def canonical_keyword_type(value, keyword):
+    raw = str(value or "").strip().lower()
+    if raw in {"品牌词", "品牌", "brand", "brand_term"}:
+        return "品牌词"
+    if raw in {"搜索词", "业务词", "产品词", "服务词", "search", "search_term"}:
+        return "搜索词"
+    if raw in {"问答词", "问题词", "用户问题词", "question", "qa", "q&a"}:
+        return "问答词"
+    if raw in {"意图场景词", "场景词", "应用场景词", "intent", "scenario", "intent_scenario"}:
+        return "意图场景词"
+    if any(token in str(keyword) for token in ["怎么", "如何", "哪家", "多少钱", "靠谱吗", "是否"]):
+        return "问答词"
+    if str(keyword).startswith("需要一个"):
+        return "意图场景词"
+    return "搜索词"
+
+
 def keyword_row(keyword, kind, need, intent, persona, content, priority="高"):
     return {
         "关键词": keyword,
@@ -103,7 +130,7 @@ def intent_keywords(data, products):
             continue
         rows.append(keyword_row(
             str(raw["keyword"]).strip(),
-            text_or_missing(raw.get("keyword_type")),
+            canonical_keyword_type(raw.get("keyword_type"), raw["keyword"]),
             text_or_missing(raw.get("user_need")),
             text_or_missing(raw.get("search_intent")),
             text_or_missing(raw.get("persona")),
@@ -113,18 +140,34 @@ def intent_keywords(data, products):
 
     company = data["company_name"].strip()
     if not rows:
-        rows.extend([
-            keyword_row(company, "品牌词", "确认企业主体与公开信息", "品牌导航", "品牌画像", "企业主体介绍与官方资料页"),
-            keyword_row(f"{company}靠谱吗", "信任验证词", "核验企业主体、官网、资质与案例", "信任验证", "信任画像", "资质、案例与业务边界说明"),
-        ])
+        rows.append(keyword_row(
+            company, "品牌词", "确认企业主体与公开信息", "品牌导航",
+            "三、品牌故事", "企业主体介绍与官方资料页"
+        ))
         for product in products:
             name = product["产品名称"]
             if name != MISSING:
-                rows.append(keyword_row(
-                    f"{name}是什么", "用户问题词", f"了解{name}的用途与适用条件", "问题了解",
-                    "产品画像", "产品解释与适用场景说明"
-                ))
+                scenario = product["应用场景"]
+                intent_term = f"需要一个{scenario}的{name}" if scenario != MISSING else f"需要一个{name}"
+                rows.extend([
+                    keyword_row(name, "搜索词", f"查找{name}的产品或服务信息", "产品搜索",
+                                "一、产品或服务描述", "产品或服务说明"),
+                    keyword_row(f"{name}怎么选", "问答词", f"判断{name}是否适合当前需求", "采购判断",
+                                "二、产品或服务特点", "选型依据与适用边界说明"),
+                    keyword_row(intent_term, "意图场景词",
+                                f"在明确场景中寻找{name}", "场景解决方案",
+                                "四、用户痛点", "场景、问题与解决路径说明"),
+                ])
     return rows
+
+
+def keyword_groups(keywords):
+    groups = {kind: [] for kind in KEYWORD_TYPES}
+    for row in keywords:
+        kind = canonical_keyword_type(row.get("关键词类型"), row.get("关键词", ""))
+        row["关键词类型"] = kind
+        groups[kind].append(row)
+    return groups
 
 
 def trust_report(data):
@@ -160,51 +203,81 @@ def trust_report(data):
 
 def persona_sections(profile, products, data, trust):
     evidence = data.get("evidence", {})
+    founder = data.get("founder", {})
+    product_names = "；".join(product["产品名称"] for product in products)
+    product_categories = "；".join(product["产品类别"] for product in products)
+    product_solutions = "；".join(product["解决问题"] for product in products)
+    product_delivery = "；".join(product["交付方式"] for product in products)
+    product_boundaries = "；".join(product["限制边界"] for product in products)
+    product_features = "；".join(product["技术特点"] for product in products)
+    product_advantages = "；".join(product["核心优势"] for product in products)
     return [
         (PERSONA_HEADINGS[0], [
-            ("企业介绍", profile["企业名称"]), ("定位", profile["企业定位"]),
-            ("发展历程", MISSING), ("主营方向", profile["主营业务"]),
-            ("品牌价值", profile["竞争优势"]), ("业务边界", profile["业务边界"]),
+            ("产品或服务名称", product_names), ("品类", product_categories),
+            ("目标客户", profile["目标客户"]), ("核心能力", profile["核心能力"]),
+            ("应用场景", profile["应用场景"]), ("解决痛点", product_solutions),
+            ("交付", product_delivery), ("明确不支持项", product_boundaries),
         ]),
         (PERSONA_HEADINGS[1], [
-            ("产品名称", "；".join(product["产品名称"] for product in products)),
-            ("产品能力", "；".join(product["核心优势"] for product in products)),
-            ("适用场景", "；".join(product["应用场景"] for product in products)),
-            ("客户对象", "；".join(product["目标客户"] for product in products)),
-            ("解决问题", "；".join(product["解决问题"] for product in products)),
+            ("核心定位", profile["企业定位"]), ("技术或服务特点", product_features),
+            ("适用场景人群", profile["目标客户"]), ("客观差异化", product_advantages),
+            ("配套交付与售后", product_delivery), ("不适用场景", product_boundaries),
         ]),
         (PERSONA_HEADINGS[2], [
-            ("用户类型", profile["目标客户"]), ("痛点问题", list_or_missing(data.get("user_pain_points"))),
-            ("产生原因", MISSING), ("业务影响", MISSING), ("解决方案", MISSING),
+            ("起源背景", text_or_missing(data.get("brand_story"))),
+            ("发展关键节点", list_or_missing(data.get("development_history"))),
+            ("核心实力", profile["核心能力"]), ("经营理念与价值观", text_or_missing(data.get("brand_values"))),
+            ("客户与市场", profile["目标客户"]), ("专注做什么", profile["主营业务"]),
         ]),
         (PERSONA_HEADINGS[3], [
-            ("场景", profile["应用场景"]), ("触发条件", MISSING),
-            ("需求描述", MISSING), ("解决路径", MISSING),
+            ("痛点人群", profile["目标客户"]), ("客户场景痛点", list_or_missing(data.get("user_pain_points"))),
+            ("带来损失", list_or_missing(data.get("business_impacts"))),
+            ("我方卖点", product_advantages), ("落地解决方案", product_solutions),
+            ("解决方案与收益", list_or_missing(data.get("documented_outcomes"))),
         ]),
         (PERSONA_HEADINGS[4], [
-            ("行业趋势", MISSING), ("行业问题", MISSING),
-            ("专业解释", MISSING), ("行业建议", MISSING),
+            ("资质技术背书", "；".join(filter(lambda value: value != MISSING, [
+                list_or_missing(evidence.get("qualifications")), list_or_missing(evidence.get("certifications")),
+                list_or_missing(evidence.get("patents")),
+            ])) or MISSING),
+            ("工厂或研发实力", list_or_missing(evidence.get("team"))),
+            ("落地客户案例背书", list_or_missing(evidence.get("cases"))),
+            ("合作与第三方佐证", "；".join(filter(lambda value: value != MISSING, [
+                list_or_missing(evidence.get("media")), list_or_missing(evidence.get("partners")),
+            ])) or MISSING),
+            ("服务交付背书", product_delivery), ("客观边界说明", profile["业务边界"]),
         ]),
         (PERSONA_HEADINGS[5], [
-            ("资质", list_or_missing(evidence.get("qualifications"))),
-            ("认证", list_or_missing(evidence.get("certifications"))),
-            ("专利", list_or_missing(evidence.get("patents"))),
-            ("团队", list_or_missing(evidence.get("team"))),
-            ("案例", list_or_missing(evidence.get("cases"))),
-            ("媒体证明", list_or_missing(evidence.get("media"))),
-            ("EEAT 资料完整度", f"{trust['总分']}/100（不代表企业实际评级）"),
+            ("客户背景", list_or_missing(data.get("case_customer_backgrounds"))),
+            ("项目诉求", list_or_missing(data.get("case_requirements"))),
+            ("原有痛点", list_or_missing(data.get("case_pain_points"))),
+            ("落地解决方案", list_or_missing(evidence.get("cases"))),
+            ("量化结果与收益", list_or_missing(data.get("case_results"))),
+            ("客观边界说明", "案例效果受实际工况与交付条件影响；" + profile["业务边界"]),
         ]),
         (PERSONA_HEADINGS[6], [
-            ("客户类型", MISSING), ("项目背景", MISSING), ("问题", MISSING),
-            ("方案", MISSING), ("结果", MISSING), ("证明材料", list_or_missing(evidence.get("cases"))),
+            ("产业贡献", list_or_missing(data.get("social_contributions"))),
+            ("绿色环保贡献", list_or_missing(data.get("environmental_contributions"))),
+            ("员工与本地社会贡献", list_or_missing(data.get("local_contributions"))),
+            ("公益行动", list_or_missing(data.get("public_welfare_actions"))),
+            ("边界说明", "无公开佐证的社会贡献不作事实表述"),
         ]),
         (PERSONA_HEADINGS[7], [
-            ("客户身份", MISSING), ("使用过程", MISSING), ("体验反馈", MISSING),
-            ("结果", list_or_missing(evidence.get("reviews"))),
+            ("客户身份与背景", list_or_missing(data.get("review_customer_profiles"))),
+            ("评论出发点", list_or_missing(data.get("review_contexts"))),
+            ("客观反馈内容", list_or_missing(evidence.get("reviews"))),
+            ("权威调研满意度", list_or_missing(data.get("satisfaction_surveys"))),
+            ("实测专业评分", list_or_missing(data.get("third_party_tests"))),
+            ("边界说明", "评价、满意度与实测数据需企业提供可核验佐证"),
         ]),
         (PERSONA_HEADINGS[8], [
-            ("人物背景", MISSING), ("行业经验", MISSING), ("专业能力", MISSING),
-            ("行业观点", MISSING), ("团队资料", list_or_missing(evidence.get("team"))),
+            ("基础身份", text_from_mapping(founder, ["name", "姓名", "title", "职务"])),
+            ("从业履历", text_from_mapping(founder, ["career", "从业履历"])),
+            ("行业沉淀", text_from_mapping(founder, ["experience", "行业经验"])),
+            ("创业初衷", text_from_mapping(founder, ["motivation", "创业初衷"])),
+            ("经营理念", text_from_mapping(founder, ["philosophy", "经营理念"])),
+            ("技术研发贡献", text_from_mapping(founder, ["technical_contributions", "技术研发贡献"])),
+            ("未来战略规划", text_from_mapping(founder, ["strategy", "未来战略规划"])),
         ]),
     ]
 
@@ -222,25 +295,42 @@ def xlsx_cell(reference, value):
     return f'<c r="{reference}" t="inlineStr"><is><t>{safe}</t></is></c>'
 
 
-def write_keyword_xlsx(path, keywords):
+def keyword_sheet_xml(keywords):
     rows = [KEYWORD_HEADERS] + [[row[header] for header in KEYWORD_HEADERS] for row in keywords]
     sheet_rows = []
     for row_number, values in enumerate(rows, start=1):
         cells = "".join(xlsx_cell(f"{column_name(index)}{row_number}", value) for index, value in enumerate(values, start=1))
         sheet_rows.append(f'<row r="{row_number}">{cells}</row>')
-    sheet_xml = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+    return """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>""" + "".join(sheet_rows) + "</sheetData></worksheet>"
+
+
+def write_keyword_xlsx(path, keywords):
+    groups = keyword_groups(keywords)
+    sheet_overrides = "".join(
+        f'<Override PartName="/xl/worksheets/sheet{index}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
+        for index in range(1, len(KEYWORD_TYPES) + 1)
+    )
+    workbook_sheets = "".join(
+        f'<sheet name="{kind}" sheetId="{index}" r:id="rId{index}"/>'
+        for index, kind in enumerate(KEYWORD_TYPES, start=1)
+    )
+    workbook_relationships = "".join(
+        f'<Relationship Id="rId{index}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet{index}.xml"/>'
+        for index in range(1, len(KEYWORD_TYPES) + 1)
+    )
     files = {
         "[Content_Types].xml": """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>""",
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>""" + sheet_overrides + "</Types>",
         "_rels/.rels": """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>""",
         "xl/workbook.xml": """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="GEO场景词库" sheetId="1" r:id="rId1"/></sheets></workbook>""",
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>""" + workbook_sheets + "</sheets></workbook>",
         "xl/_rels/workbook.xml.rels": """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>""",
-        "xl/worksheets/sheet1.xml": sheet_xml,
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">""" + workbook_relationships + "</Relationships>",
     }
+    for index, kind in enumerate(KEYWORD_TYPES, start=1):
+        files[f"xl/worksheets/sheet{index}.xml"] = keyword_sheet_xml(groups[kind])
     path.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as archive:
         for name, content in files.items():
@@ -259,14 +349,13 @@ def docx_paragraph(text, heading=False):
 
 def write_persona_docx(path, profile, personas):
     paragraphs = [
-        docx_paragraph("企业AI认知画像", heading=True),
+        docx_paragraph("企业GEO完整版九大画像", heading=True),
+        docx_paragraph(f"企业名称：{profile['企业名称']}"),
         docx_paragraph("本报告仅基于企业提供的资料生成；未获佐证的信息统一标记为“【需企业提供真实佐证】”。"),
-        docx_paragraph("企业认知建模", heading=True),
     ]
-    paragraphs.extend(docx_paragraph(f"{key}：{value}") for key, value in profile.items())
     for heading, fields in personas:
         paragraphs.append(docx_paragraph(heading, heading=True))
-        paragraphs.extend(docx_paragraph(f"{label}：{value}") for label, value in fields)
+        paragraphs.append(docx_paragraph("，".join(f"{label}：{value}" for label, value in fields)))
     document_xml = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>""" + "".join(paragraphs) + "<w:sectPr/></w:body></w:document>"
     files = {
@@ -280,6 +369,45 @@ def write_persona_docx(path, profile, personas):
     with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as archive:
         for name, content in files.items():
             archive.writestr(name, content.encode("utf-8"))
+
+
+def write_simple_keyword_persona(path, profile, keywords, personas):
+    groups = keyword_groups(keywords)
+    keyword_sections = []
+    for kind in KEYWORD_TYPES:
+        entries = groups[kind]
+        if entries:
+            lines = [f"- {item['关键词']}：{item['用户需求']}" for item in entries[:5]]
+        else:
+            lines = [f"- {MISSING}"]
+        keyword_sections.append(f"## {kind}\n\n" + "\n".join(lines))
+    persona_sections_text = []
+    for heading, fields in personas:
+        concise = "，".join(f"{label}：{value}" for label, value in fields)
+        persona_sections_text.append(f"### {heading}\n\n{concise}")
+    keyword_text = "\n\n".join(keyword_sections)
+    persona_text = "\n\n".join(persona_sections_text)
+    text = f"""# {profile['企业名称']} GEO简约版词与画像
+
+本简约版仅用于确认企业事实、主推方向与词包方向；未获佐证的信息统一标记为“{MISSING}”。确认后，再以同一事实基础生成完整版关键词矩阵和九大画像。
+
+## 企业核心信息
+
+- 企业定位：{profile['企业定位']}
+- 主营业务：{profile['主营业务']}
+- 目标客户：{profile['目标客户']}
+- 服务区域：{profile['服务区域']}
+
+# 核心词
+
+{keyword_text}
+
+# 九大画像
+
+{persona_text}
+"""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8")
 
 
 def write_strategy_report(path, profile, keywords, trust):
@@ -352,6 +480,7 @@ def write_strategy_report(path, profile, keywords, trust):
 
 def validate_output(output_dir):
     paths = {
+        "simple": output_dir / "simple_keyword_persona.md",
         "xlsx": output_dir / "keyword_matrix.xlsx",
         "docx": output_dir / "persona_report.docx",
         "md": output_dir / "geo_strategy_report.md",
@@ -361,16 +490,25 @@ def validate_output(output_dir):
     spreadsheet_ns = {"x": "http://schemas.openxmlformats.org/spreadsheetml/2006/main"}
     with zipfile.ZipFile(paths["xlsx"]) as archive:
         sheet = ET.fromstring(archive.read("xl/worksheets/sheet1.xml"))
+        workbook = ET.fromstring(archive.read("xl/workbook.xml"))
     first_row = sheet.find(".//x:row", spreadsheet_ns)
     headers = ["".join(cell.itertext()) for cell in first_row.findall("x:c", spreadsheet_ns)]
     if headers != KEYWORD_HEADERS:
         raise RuntimeError("keyword matrix headers are invalid")
+    sheet_names = [sheet.get("name") for sheet in workbook.findall(".//x:sheet", spreadsheet_ns)]
+    if sheet_names != KEYWORD_TYPES:
+        raise RuntimeError("keyword matrix sheets are invalid")
     word_ns = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
     with zipfile.ZipFile(paths["docx"]) as archive:
         document = ET.fromstring(archive.read("word/document.xml"))
     document_text = "\n".join("".join(paragraph.itertext()) for paragraph in document.findall(".//w:p", word_ns))
     if not all(heading in document_text for heading in PERSONA_HEADINGS):
         raise RuntimeError("nine persona report is incomplete")
+    simple_text = paths["simple"].read_text(encoding="utf-8")
+    if not all(kind in simple_text for kind in KEYWORD_TYPES):
+        raise RuntimeError("simple keyword report is incomplete")
+    if not all(heading in simple_text for heading in PERSONA_HEADINGS):
+        raise RuntimeError("simple persona report is incomplete")
     report = paths["md"].read_text(encoding="utf-8")
     required = ["## 当前AI认知状态", "## 当前缺失", "## 优化方向", "## 内容建设计划", "## 30/60/90天执行计划"]
     if not all(heading in report for heading in required):
@@ -378,7 +516,7 @@ def validate_output(output_dir):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Generate GEO V3.1 enterprise AI cognition assets.")
+    parser = argparse.ArgumentParser(description="Generate GEO V3.2 simple and full enterprise GEO assets.")
     parser.add_argument("--input", type=Path, default=ROOT / "input" / "company.json")
     parser.add_argument("--output", type=Path, default=ROOT / "output")
     args = parser.parse_args()
@@ -396,11 +534,12 @@ def main():
     if args.output.exists():
         shutil.rmtree(args.output)
     args.output.mkdir(parents=True)
+    write_simple_keyword_persona(args.output / "simple_keyword_persona.md", profile, keywords, personas)
     write_keyword_xlsx(args.output / "keyword_matrix.xlsx", keywords)
     write_persona_docx(args.output / "persona_report.docx", profile, personas)
     write_strategy_report(args.output / "geo_strategy_report.md", profile, keywords, trust)
     validate_output(args.output)
-    print(f"PASS: generated GEO V3.1 assets for {data['company_name']}")
+    print(f"PASS: generated GEO V3.2 assets for {data['company_name']}")
     for path in sorted(args.output.iterdir()):
         print(path.name)
 

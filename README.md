@@ -1,4 +1,4 @@
-# GEO Skill V3.1.1
+# GEO Skill V3.2
 
 企业 AI 可见度执行系统。GEO-BD 负责诊断问题和给出处方，本仓库将经确认的企业资料转化为可直接投入 GEO 运营的 AI 认知资产。
 
@@ -20,7 +20,7 @@
 
 默认任务优先使用 `workflows/fast_path.md`：把企业资料归一化为一份 `Fact_Packet`，同一轮完成默认模块，减少豆包、千问、DeepSeek 等平台的重复投喂。无目录能力的平台只投喂 `SKILL.md`、`INDEX.md`、`workflows/fast_path.md` 和企业资料包。
 
-默认只生成场景词库、九大画像报告和 GEO 优化方案。文章、内容正文、发布策略、外部检索和客户语料库均需用户明确确认后按需执行。
+默认按“简约版确认 → 完整版交付”生成词与画像。文章、内容正文、发布策略、外部检索和客户语料库均需用户明确确认后按需执行。
 
 ## 交互式流程
 
@@ -34,13 +34,15 @@
 
 ```text
 output/
+├── simple_keyword_persona.md
 ├── keyword_matrix.xlsx
 ├── persona_report.docx
 └── geo_strategy_report.md
 ```
 
-- `keyword_matrix.xlsx`：关键词、关键词类型、用户需求、搜索意图、对应画像、内容建议、优先级。
-- `persona_report.docx`：企业品牌、产品服务、用户痛点、使用场景、行业知识、信任背书、客户案例、客户评价、创始人/专家九大画像。
+- `simple_keyword_persona.md`：简约版品牌词、搜索词、问答词、意图场景词，以及旧九大板块画像，用于客户确认。
+- `keyword_matrix.xlsx`：完整版关键词矩阵，固定四个工作表：品牌词、搜索词、问答词、意图场景词。
+- `persona_report.docx`：完整版旧九大板块画像：产品或服务描述、产品或服务特点、品牌故事、用户痛点、信任背书、客户案例、社会贡献、客户评价、创始人介绍。
 - `geo_strategy_report.md`：当前 AI 认知状态、当前缺失、优化方向、内容建设计划、30/60/90 天执行计划。
 
 ## 本地运行
@@ -80,7 +82,7 @@ JSON 输入可填写企业名称、官网、定位、主营业务、目标客户
 python tests/run_tests.py
 ```
 
-验证结构、Schema、三份导出文件、九大画像完整性、关键词场景匹配和报告格式。
+验证结构、Schema、四份导出文件、四类词工作表、旧九大板块完整性和报告格式。
 
 ## License
 

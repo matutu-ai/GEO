@@ -89,6 +89,7 @@ REQUIRED = [
     "templates/nine-profile.md",
     "templates/vertical-profile.md",
     "templates/keyword-matrix.md",
+    "templates/simple-keyword-persona.md",
     "templates/content-matrix.md",
     "templates/final-report.md",
 ]
@@ -156,31 +157,75 @@ with tempfile.TemporaryDirectory() as temp_dir:
     if result.returncode:
         failures.append(f"main.py failed: {result.stderr or result.stdout}")
     else:
+        simple = output_dir / "simple_keyword_persona.md"
         xlsx = output_dir / "keyword_matrix.xlsx"
         docx = output_dir / "persona_report.docx"
         report = output_dir / "geo_strategy_report.md"
-        if not all(path.is_file() for path in [xlsx, docx, report]):
+        if not all(path.is_file() for path in [simple, xlsx, docx, report]):
             failures.append("main.py: required output files missing")
         else:
             spreadsheet_ns = {"x": "http://schemas.openxmlformats.org/spreadsheetml/2006/main"}
             word_ns = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
             with zipfile.ZipFile(xlsx) as archive:
                 sheet = ET.fromstring(archive.read("xl/worksheets/sheet1.xml"))
+                workbook = ET.fromstring(archive.read("xl/workbook.xml"))
             headers = ["".join(cell.itertext()) for cell in sheet.find(".//x:row", spreadsheet_ns).findall("x:c", spreadsheet_ns)]
             if headers != ["关键词", "关键词类型", "用户需求", "搜索意图", "对应画像", "内容建议", "优先级"]:
                 failures.append("keyword matrix: invalid headers")
+            sheet_names = [node.get("name") for node in workbook.findall(".//x:sheet", spreadsheet_ns)]
+            if sheet_names != ["品牌词", "搜索词", "问答词", "意图场景词"]:
+                failures.append("keyword matrix: invalid keyword groups")
             with zipfile.ZipFile(docx) as archive:
                 document = ET.fromstring(archive.read("word/document.xml"))
             document_text = "\n".join("".join(node.itertext()) for node in document.findall(".//w:p", word_ns))
-            for heading in ["一、品牌画像", "二、产品画像", "三、用户痛点画像", "四、场景画像", "五、行业画像", "六、信任画像", "七、案例画像", "八、客户评价画像", "九、专家画像"]:
+            for heading in ["一、产品或服务描述", "二、产品或服务特点", "三、品牌故事", "四、用户痛点", "五、信任背书", "六、客户案例", "七、社会贡献", "八、客户评价", "九、创始人介绍"]:
                 if heading not in document_text:
                     failures.append(f"persona report: missing {heading}")
+            simple_text = simple.read_text(encoding="utf-8")
+            for marker in ["品牌词", "搜索词", "问答词", "意图场景词", "一、产品或服务描述", "九、创始人介绍"]:
+                if marker not in simple_text:
+                    failures.append(f"simple report: missing {marker}")
             report_text = report.read_text(encoding="utf-8")
             for heading in ["## 当前AI认知状态", "## 当前缺失", "## 优化方向", "## 内容建设计划", "## 30/60/90天执行计划"]:
                 if heading not in report_text:
                     failures.append(f"strategy report: missing {heading}")
             if "【需企业提供真实佐证】" not in document_text:
                 failures.append("truthfulness check: missing evidence marker")
+
+    complete_input = Path(temp_dir) / "complete_company.json"
+    complete_output = Path(temp_dir) / "complete_output"
+    complete_input.write_text(json.dumps({
+        "company_name": "测试企业（仅验收数据）",
+        "positioning": "工业设备服务商",
+        "main_businesses": ["工业设备服务"],
+        "target_customers": ["工业企业"],
+        "use_cases": ["车间设备改造"],
+        "products": [{
+            "name": "工业设备方案",
+            "category": "工业服务",
+            "target_customers": ["工业企业"],
+            "use_cases": ["车间设备改造"],
+            "problems_solved": ["设备适配问题"],
+            "advantages": ["按需方案"],
+            "technical_features": ["需以真实技术资料确认"],
+            "delivery_methods": ["现场交付"],
+            "boundaries": ["具体适配条件以现场确认"],
+        }],
+        "evidence": {},
+    }, ensure_ascii=False), encoding="utf-8")
+    complete_result = subprocess.run(
+        [sys.executable, str(ROOT / "main.py"), "--input", str(complete_input), "--output", str(complete_output)],
+        text=True,
+        capture_output=True,
+    )
+    if complete_result.returncode:
+        failures.append(f"complete input: main.py failed: {complete_result.stderr or complete_result.stdout}")
+    else:
+        with zipfile.ZipFile(complete_output / "keyword_matrix.xlsx") as archive:
+            for sheet_number in range(1, 5):
+                sheet = ET.fromstring(archive.read(f"xl/worksheets/sheet{sheet_number}.xml"))
+                if len(sheet.findall(".//x:row", spreadsheet_ns)) < 2:
+                    failures.append(f"complete input: keyword sheet {sheet_number} has no keyword")
 
 if failures:
     print("\n".join(failures))

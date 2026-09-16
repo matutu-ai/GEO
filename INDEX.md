@@ -1,11 +1,11 @@
 # GEO Skill V3.1 文件索引
 
-用途：以最小读取量完成企业 AI 可见度资产生成。学习阶段只读 `SKILL.md` 和本文件；不加载无关工作流、旧模板、测试或示例。
+用途：以最小读取量完成企业 AI 可见度资产生成。默认按简约版确认后再交付完整版；学习阶段只读 `SKILL.md` 和本文件。
 
 ## 默认读取路径
 
 ```text
-fast_path（只要默认三份产物时优先）
+fast_path（需要简约版与完整版四份产物时优先）
 → 01_company_analysis
 → 02_product_analysis（有产品资料时）
 → 03_intent_analysis
@@ -37,13 +37,14 @@ fast_path（只要默认三份产物时优先）
 | --- | --- | --- |
 | 企业认知建模 | `workflows/01_company_analysis.md` + `schemas/company-profile-v3.1.schema.json` | Company_Profile |
 | 产品价值模型 | `workflows/02_product_analysis.md` + `schemas/product-profile.schema.json` | Product_Profile |
-| 场景词与意图 | `workflows/03_intent_analysis.md` + `schemas/intent-keyword-matrix.schema.json` | Intent_Keyword_Matrix |
-| 九大画像 | `workflows/04_persona_generation.md` | Nine_Personas |
+| 场景词与意图 | `workflows/03_intent_analysis.md` + `schemas/intent-keyword-matrix.schema.json` | 品牌词、搜索词、问答词、意图场景词 |
+| 九大画像 | `workflows/04_persona_generation.md` + `workflows/nine-profile.md` | 旧九大板块简约版与完整版 |
 | EEAT 信任分析 | `workflows/05_trust_analysis.md` + `schemas/trust-report.schema.json` | Trust_Report |
-| 场景词库导出 | `workflows/06_keyword_matrix.md` | `keyword_matrix.xlsx` |
+| 简约版导出 | `templates/simple-keyword-persona.md` | `simple_keyword_persona.md` |
+| 完整版词库导出 | `workflows/06_keyword_matrix.md` | `keyword_matrix.xlsx`（四个词类工作表） |
 | 内容建设计划 | `workflows/07_content_strategy.md` | 内容规划 |
 | GEO 优化方案 | `workflows/08_geo_report.md` | `geo_strategy_report.md` |
-| 本地执行 | `main.py` + `input/company.json` | 三份最终文件 |
+| 本地执行 | `main.py` + `input/company.json` | 四份最终文件 |
 | 客户语料库 | `workflows/client-corpus.md` | 确认后才读写 |
 | 快速执行 | `workflows/fast_path.md` | 默认任务和无目录平台的最小投喂 |
 
@@ -91,8 +92,9 @@ fast_path（只要默认三份产物时优先）
 
 | 文件 | 必查内容 |
 | --- | --- |
-| `keyword_matrix.xlsx` | 固定七列表头；每个词有用户需求、意图和对应画像 |
-| `persona_report.docx` | 九个固定画像标题；缺失事实有待佐证标记 |
+| `simple_keyword_persona.md` | 四类词和旧九大板块，用于确认方向 |
+| `keyword_matrix.xlsx` | 品牌词、搜索词、问答词、意图场景词四个工作表；每个词有用户需求、意图和对应画像 |
+| `persona_report.docx` | 产品或服务描述、产品或服务特点、品牌故事、用户痛点、信任背书、客户案例、社会贡献、客户评价、创始人介绍 |
 | `geo_strategy_report.md` | AI 认知状态、缺失、优化方向、内容建设计划、30/60/90 天计划 |
 
 旧版的内容矩阵、发布、验证和 Gap 工作流保留为兼容模块，只有用户点名时才读取。

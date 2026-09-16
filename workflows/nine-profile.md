@@ -15,6 +15,7 @@
 ## 规则
 
 - 必须从 GEO Profile + Evidence 生成
+- 简约版与完整版都使用相同的九大板块顺序，不得重命名、增删或改序。
 - 每个画像标记：
   - `Confirmed`
   - `Partially Confirmed`
