@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/matutu-ai/GEO/schemas/final-report-v4.schema.json",
+  "title": "GEO V4 Final Report",
+  "type": "object",
+  "required": ["current_state", "gaps", "directions", "plan", "fact_ids"],
+  "properties": {
+    "current_state": {"type": "array", "items": {"type": "string"}},
+    "gaps": {"type": "array", "items": {"type": "string"}},
+    "directions": {"type": "array", "items": {"type": "string"}},
+    "plan": {"type": "array", "items": {"type": "string"}},
+    "fact_ids": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+  },
+  "additionalProperties": false
+}

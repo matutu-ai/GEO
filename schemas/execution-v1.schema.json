@@ -1,0 +1,154 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/matutu-ai/GEO/schemas/execution-v1.schema.json",
+  "title": "GEO Standard Execution Projection V1",
+  "type": "object",
+  "required": [
+    "execution_version",
+    "diagnostic_id",
+    "company_id",
+    "source_system",
+    "prescriptions",
+    "strategies",
+    "intents",
+    "keywords",
+    "personas",
+    "evidence_readiness",
+    "content_projection",
+    "source_projection",
+    "publishing_projection",
+    "retest_request"
+  ],
+  "properties": {
+    "execution_version": {"const": "1.0.0"},
+    "diagnostic_id": {"type": "string", "minLength": 1},
+    "company_id": {"type": "string", "minLength": 1},
+    "source_system": {"enum": ["GEO-BD", "MANUAL"]},
+    "prescriptions": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/prescription"}},
+    "strategies": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/strategy"}},
+    "intents": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/intent"}},
+    "keywords": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/keyword"}},
+    "personas": {"type": "array", "minItems": 9, "maxItems": 9, "items": {"$ref": "#/$defs/persona"}},
+    "evidence_readiness": {"$ref": "#/$defs/evidenceReadiness"},
+    "content_projection": {"$ref": "#/$defs/notImplemented"},
+    "source_projection": {"$ref": "#/$defs/notImplemented"},
+    "publishing_projection": {"$ref": "#/$defs/notImplemented"},
+    "retest_request": {"$ref": "#/$defs/retestRequest"}
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "prescription": {
+      "type": "object",
+      "required": ["id", "statement", "priority", "root_cause_ids", "expected_outcome", "verification_method", "handoff_to"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^PRESCRIPTION-.+$"},
+        "statement": {"type": "string", "minLength": 1},
+        "priority": {"type": "string", "pattern": "^P[0-9]+$"},
+        "root_cause_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "expected_outcome": {"type": "string", "minLength": 1},
+        "verification_method": {"type": "string", "minLength": 1},
+        "handoff_to": {"const": "GEO"}
+      },
+      "additionalProperties": false
+    },
+    "strategy": {
+      "type": "object",
+      "required": ["id", "prescription_ids", "objective", "priority", "execution_scope", "fact_ids"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^STRATEGY-.+$"},
+        "prescription_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^PRESCRIPTION-.+$"}},
+        "objective": {"type": "string", "minLength": 1},
+        "priority": {"type": "string", "pattern": "^P[0-9]+$"},
+        "execution_scope": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["keyword", "persona", "content", "source", "publishing", "retest"]}},
+        "fact_ids": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+      },
+      "additionalProperties": false
+    },
+    "intent": {
+      "type": "object",
+      "required": ["id", "strategy_ids", "prescription_ids", "intent", "scenario", "target_user", "fact_ids"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^INTENT-.+$"},
+        "strategy_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^STRATEGY-.+$"}},
+        "prescription_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^PRESCRIPTION-.+$"}},
+        "intent": {"type": "string", "minLength": 1},
+        "scenario": {"type": "string", "minLength": 1},
+        "target_user": {"type": "string", "minLength": 1},
+        "fact_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+      },
+      "additionalProperties": false
+    },
+    "keyword": {
+      "type": "object",
+      "required": ["keyword_id", "keyword", "keyword_type", "product_or_service", "user_scenario", "search_intent", "persona_unit", "fact_ids", "prescription_ids", "strategy_ids", "intent_ids", "evidence_status", "risk_level", "needs_confirmation"],
+      "properties": {
+        "keyword_id": {"type": "string", "pattern": "^KEYWORD-.+$"},
+        "keyword": {"type": "string", "minLength": 1},
+        "keyword_type": {"enum": ["品牌词", "搜索词", "问答词", "意图场景词"]},
+        "product_or_service": {"type": "string", "minLength": 1},
+        "user_scenario": {"type": "string", "minLength": 1},
+        "search_intent": {"type": "string", "minLength": 1},
+        "persona_unit": {"enum": ["产品或服务描述", "产品或服务特点", "品牌故事", "用户痛点", "信任背书", "客户案例", "社会贡献", "客户评价", "创始人介绍"]},
+        "fact_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "prescription_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^PRESCRIPTION-.+$"}},
+        "strategy_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^STRATEGY-.+$"}},
+        "intent_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^INTENT-.+$"}},
+        "evidence_status": {"enum": ["CONFIRMED", "INFERRED", "UNKNOWN", "CONFLICTED"]},
+        "risk_level": {"enum": ["低", "中", "高"]},
+        "needs_confirmation": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "persona": {
+      "type": "object",
+      "required": ["persona_id", "name", "focus", "status", "confirmed_content", "unknown_content", "missing_materials", "forbidden_claims", "fact_ids", "prescription_ids", "strategy_ids"],
+      "properties": {
+        "persona_id": {"type": "string", "pattern": "^PERSONA-.+$"},
+        "name": {"type": "string", "minLength": 1},
+        "focus": {"type": "string", "minLength": 1},
+        "status": {"enum": ["READY", "NOT_IMPLEMENTED"]},
+        "confirmed_content": {"type": "array", "items": {"type": "string"}},
+        "unknown_content": {"type": "array", "items": {"type": "string"}},
+        "missing_materials": {"type": "array", "items": {"type": "string"}},
+        "forbidden_claims": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+        "fact_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "prescription_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^PRESCRIPTION-.+$"}},
+        "strategy_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^STRATEGY-.+$"}}
+      },
+      "additionalProperties": false
+    },
+    "evidenceReadiness": {
+      "type": "object",
+      "required": ["status", "confirmed_fact_count", "total_fact_count", "missing_fact_fields", "fact_ids"],
+      "properties": {
+        "status": {"const": "REFERENCE_ONLY"},
+        "confirmed_fact_count": {"type": "integer", "minimum": 0},
+        "total_fact_count": {"type": "integer", "minimum": 1},
+        "missing_fact_fields": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "fact_ids": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+      },
+      "additionalProperties": false
+    },
+    "notImplemented": {
+      "type": "object",
+      "required": ["status"],
+      "properties": {"status": {"const": "NOT_IMPLEMENTED"}},
+      "additionalProperties": false
+    },
+    "retestRequest": {
+      "type": "object",
+      "required": ["retest_version", "diagnostic_id", "company_id", "source_system", "target_system", "executed_prescription_ids", "executed_strategy_ids", "retest_targets"],
+      "properties": {
+        "retest_version": {"const": "1.0.0"},
+        "diagnostic_id": {"type": "string", "minLength": 1},
+        "company_id": {"type": "string", "minLength": 1},
+        "source_system": {"const": "GEO"},
+        "target_system": {"const": "GEO-BD"},
+        "executed_prescription_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^PRESCRIPTION-.+$"}},
+        "executed_strategy_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^STRATEGY-.+$"}},
+        "retest_targets": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]*$"}}
+      },
+      "additionalProperties": false
+    }
+  }
+}

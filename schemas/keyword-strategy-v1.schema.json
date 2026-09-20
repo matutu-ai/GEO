@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/matutu-ai/GEO/schemas/keyword-strategy-v1.schema.json",
+  "title": "GEO Keyword Strategy V1",
+  "type": "object",
+  "required": ["keyword_version", "diagnostic_id", "company_id", "keywords"],
+  "properties": {
+    "keyword_version": {"const": "1.0.0"},
+    "diagnostic_id": {"type": "string", "minLength": 1},
+    "company_id": {"type": "string", "minLength": 1},
+    "keywords": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["keyword_id", "keyword", "keyword_type", "product_or_service", "user_scenario", "search_intent", "persona_unit", "fact_ids", "prescription_ids", "strategy_ids", "intent_ids", "evidence_status", "risk_level", "needs_confirmation"],
+        "properties": {
+        "keyword_id": {"type": "string", "pattern": "^KEYWORD-.+$"},
+        "keyword": {"type": "string", "minLength": 1},
+        "keyword_type": {"enum": ["品牌词", "搜索词", "问答词", "意图场景词"]},
+        "product_or_service": {"type": "string", "minLength": 1},
+        "user_scenario": {"type": "string", "minLength": 1},
+        "search_intent": {"type": "string", "minLength": 1},
+        "persona_unit": {"enum": ["产品或服务描述", "产品或服务特点", "品牌故事", "用户痛点", "信任背书", "客户案例", "社会贡献", "客户评价", "创始人介绍"]},
+          "fact_ids": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {"type": "string", "minLength": 1}
+          },
+          "prescription_ids": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {"type": "string", "pattern": "^PRESCRIPTION-.+$"}
+          },
+          "strategy_ids": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {"type": "string", "pattern": "^STRATEGY-.+$"}
+          },
+        "intent_ids": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {"type": "string", "pattern": "^INTENT-.+$"}
+          },
+          "evidence_status": {"enum": ["CONFIRMED", "INFERRED", "UNKNOWN", "CONFLICTED"]},
+          "risk_level": {"enum": ["低", "中", "高"]},
+          "needs_confirmation": {"type": "boolean"}
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

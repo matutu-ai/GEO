@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/matutu-ai/GEO/schemas/intent-strategy-v1.schema.json",
+  "title": "GEO Intent Strategy V1",
+  "type": "object",
+  "required": ["intent_version", "diagnostic_id", "company_id", "intents"],
+  "properties": {
+    "intent_version": {"const": "1.0.0"},
+    "diagnostic_id": {"type": "string", "minLength": 1},
+    "company_id": {"type": "string", "minLength": 1},
+    "intents": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "strategy_ids", "prescription_ids", "intent", "scenario", "target_user", "fact_ids"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^INTENT-.+$"},
+          "strategy_ids": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {"type": "string", "pattern": "^STRATEGY-.+$"}
+          },
+          "prescription_ids": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {"type": "string", "pattern": "^PRESCRIPTION-.+$"}
+          },
+          "intent": {"type": "string", "minLength": 1},
+          "scenario": {"type": "string", "minLength": 1},
+          "target_user": {"type": "string", "minLength": 1},
+          "fact_ids": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {"type": "string", "minLength": 1}
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

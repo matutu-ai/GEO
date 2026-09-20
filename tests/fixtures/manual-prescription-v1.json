@@ -1,0 +1,19 @@
+{
+  "handoff_version": "1.0.0",
+  "diagnostic_id": "DIAG-MANUAL-001",
+  "company_id": "COMPANY-TEST-001",
+  "company_name": "测试企业（仅验收数据）",
+  "source_system": "MANUAL",
+  "target_system": "GEO",
+  "prescriptions": [
+    {
+      "id": "PRESCRIPTION-MANUAL-001",
+      "statement": "建立核心服务的 GEO 查询覆盖",
+      "priority": "P1",
+      "root_cause_ids": ["ROOT-MANUAL-001"],
+      "expected_outcome": "形成可执行的关键词与画像计划",
+      "verification_method": "复测目标查询及引用覆盖",
+      "handoff_to": "GEO"
+    }
+  ]
+}

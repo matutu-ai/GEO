@@ -1,6 +1,7 @@
-"""Repository-level acceptance checks for GEO V4."""
+"""Repository-level acceptance checks for Standard Path and Legacy-compatible V4."""
 
 import json
+import re
 import subprocess
 import sys
 import tempfile
@@ -11,22 +12,32 @@ from xml.etree import ElementTree as ET
 
 ROOT = Path(__file__).resolve().parent.parent
 REQUIRED = [
-    "SKILL.md", "INDEX.md", "QUICK_ROUTER.md", "main.py", "config/pipeline_policy.json",
+    "SKILL.md", "INDEX.md", "QUICK_ROUTER.md", "main.py", "requirements.txt", "config/pipeline_policy.json",
     "core/execution_protocol.py", "core/agent_contracts.py", "core/artifact_store.py",
-    "core/fixed_pipeline.py", "core/output_renderer.py", "validators/v4_validator.py",
+    "core/fixed_pipeline.py", "core/output_renderer.py", "core/standard_pipeline.py",
+    "core/standard_renderer.py", "validators/v4_validator.py",
     "schemas/execution-protocol.schema.json", "schemas/fact-packet-v4.schema.json",
     "schemas/company-profile-v4.schema.json", "schemas/product-profile-v4.schema.json",
     "schemas/intent-keyword-matrix-v4.schema.json", "schemas/nine-personas-v4.schema.json",
     "schemas/trust-report-v4.schema.json", "schemas/keyword-matrix-v4.schema.json",
-    "schemas/final-summary-v4.schema.json", "workflows/fixed_pipeline.md",
+    "schemas/final-report-v4.schema.json", "schemas/final-summary-v4.schema.json", "workflows/fixed_pipeline.md",
+    "schemas/geo-bd-handoff-v1.schema.json", "schemas/geo-strategy-v1.schema.json",
+    "schemas/geo-retest-request-v1.schema.json", "schemas/intent-strategy-v1.schema.json",
+    "schemas/keyword-strategy-v1.schema.json", "schemas/persona-plan-v1.schema.json",
+    "schemas/execution-v1.schema.json", "validators/contract_validator.py",
     "workflows/content_strategy.md", "workflows/legacy/fast_path.md",
     "prompts/_interaction_contract.md", "prompts/00_start_prompt.md",
     "prompts/legacy/13_final_report_prompt.md", "tests/test_protocol_compliance.py",
+    "tests/test_contract_boundaries.py", "tests/test_standard_path.py",
+    "tests/fixtures/geo-bd-handoff-v1.json", "tests/fixtures/manual-prescription-v1.json",
 ]
 V4_OUTPUTS = [
     "fact_packet.json", "company_profile.json", "product_profile.json", "intent_keyword_matrix.json",
     "persona_report.docx", "trust_report.json", "keyword_matrix.xlsx", "geo_strategy_report.md",
     "final_summary.json", "execution_trace.json",
+]
+STANDARD_OUTPUTS = [
+    "keyword_matrix.json", "persona_plan.json", "keyword_matrix.xlsx", "persona_report.md",
 ]
 failures = []
 
@@ -39,6 +50,12 @@ for path in (ROOT / "schemas").glob("*.json"):
         json.loads(path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         failures.append(f"invalid JSON schema {path.name}: {exc}")
+
+for source in [ROOT / "main.py", *sorted((ROOT / "core").glob("*.py")), *sorted((ROOT / "validators").glob("*.py"))]:
+    content = source.read_text(encoding="utf-8")
+    for reference in sorted(set(re.findall(r"schemas/[A-Za-z0-9_.-]+\.json", content))):
+        if not (ROOT / reference).is_file():
+            failures.append(f"missing runtime schema reference: {source.name} -> {reference}")
 
 policy = json.loads((ROOT / "config" / "pipeline_policy.json").read_text(encoding="utf-8"))
 for key, expected in {
@@ -103,7 +120,53 @@ with tempfile.TemporaryDirectory() as temporary:
     if result.returncode != 2 or any(blocked.iterdir()):
         failures.append("fail closed: incomplete Fast Path must block final export")
 
-protocol_result = subprocess.run([sys.executable, "-m", "unittest", "tests/test_protocol_compliance.py"], cwd=ROOT, text=True, capture_output=True)
+    standard = root / "standard"
+    result = subprocess.run([
+        sys.executable, str(ROOT / "main.py"), "--mode", "standard",
+        "--handoff", str(ROOT / "tests" / "fixtures" / "geo-bd-handoff-v1.json"),
+        "--input", str(ROOT / "tests" / "fixtures" / "complete-v4-company.json"),
+        "--output", str(standard),
+    ], text=True, capture_output=True)
+    if result.returncode:
+        failures.append(f"standard path failed: {result.stdout}{result.stderr}")
+    elif {path.name for path in standard.iterdir()} != set(STANDARD_OUTPUTS):
+        failures.append("standard path: output set does not match the four-file keyword/persona contract")
+    else:
+        for name in ["keyword_matrix.json", "persona_plan.json"]:
+            try:
+                json.loads((standard / name).read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError) as exc:
+                failures.append(f"standard path: invalid {name}: {exc}")
+        try:
+            with zipfile.ZipFile(standard / "keyword_matrix.xlsx") as archive:
+                workbook = ET.fromstring(archive.read("xl/workbook.xml"))
+                sheet_names = [node.get("name") for node in workbook.findall(".//{http://schemas.openxmlformats.org/spreadsheetml/2006/main}sheet")]
+                if sheet_names != ["品牌词", "搜索词", "问答词", "意图场景词"]:
+                    failures.append("standard path: keyword workbook sheets are not fixed")
+        except (OSError, KeyError, zipfile.BadZipFile, ET.ParseError) as exc:
+            failures.append(f"standard path: invalid keyword_matrix.xlsx: {exc}")
+        try:
+            report = (standard / "persona_report.md").read_text(encoding="utf-8")
+            for heading in ["产品或服务描述", "产品或服务特点", "品牌故事", "用户痛点", "信任背书", "客户案例", "社会贡献", "客户评价", "创始人介绍"]:
+                if f"## {heading}" not in report:
+                    failures.append(f"standard path: persona report missing {heading}")
+        except OSError as exc:
+            failures.append(f"standard path: invalid persona_report.md: {exc}")
+
+    standard_blocked = root / "standard-blocked"
+    result = subprocess.run([
+        sys.executable, str(ROOT / "main.py"), "--mode", "standard",
+        "--input", str(ROOT / "tests" / "fixtures" / "complete-v4-company.json"),
+        "--output", str(standard_blocked),
+    ], text=True, capture_output=True)
+    if result.returncode != 2 or standard_blocked.exists():
+        failures.append("standard path: missing handoff must fail closed without legacy fallback")
+
+protocol_result = subprocess.run([
+    sys.executable, "-m", "unittest",
+    "tests/test_protocol_compliance.py", "tests/test_contract_boundaries.py",
+    "tests/test_standard_path.py",
+], cwd=ROOT, text=True, capture_output=True)
 if protocol_result.returncode:
     failures.append(f"protocol compliance failed: {protocol_result.stdout}{protocol_result.stderr}")
 
@@ -111,4 +174,4 @@ if failures:
     print("\n".join(failures))
     raise SystemExit(1)
 
-print("PASS: GEO V4 fixed pipeline, artifacts, fail-closed validation, and 25 protocol compliance checks")
+print("PASS: GEO Standard Path, Legacy V4, 25 protocol checks, 20 phase-0 checks, and 20 phase-1 checks")

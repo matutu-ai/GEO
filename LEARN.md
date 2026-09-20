@@ -1,16 +1,27 @@
-# GEO V4 平台投喂说明
+# GEO 学习与平台投喂说明
 
-豆包、千问、DeepSeek、Codex 等平台先投喂 `QUICK_ROUTER.md` 和 `SKILL.md`。平台只能选择以下入口，不能改写 Pipeline：
+先建立系统边界：
 
-- 资料不足：Interactive Mode，仅创建 Fact_Packet 并提出唯一补料动作。
-- 用户明确要求一次完成且资料完整：Fast Path，执行固定八阶段。
+GEO-BD 决定：
+“为什么要优化、优先优化什么”
 
-可直接使用以下提示：
+GEO 决定：
+“具体怎么优化、生成什么、如何执行”
 
-```text
-执行 GEO Skill V4。严格遵循 SKILL.md、QUICK_ROUTER.md 与程序协议。
-不得自行选择、跳过、重排或增加阶段；不得修改企业定位；不得虚构事实；不得读取 legacy 流程。
-资料不足时，只创建 Fact_Packet 并输出缺失资料和下一步唯一动作。
-只有我明确要求一次完成且资料契约完整时，才执行固定 Fast Path。
-未知、推断与冲突必须保留状态；最终文件必须由程序校验和 Renderer 输出。
-```
+推荐最短阅读顺序：
+
+1. `README.md`：产品定位和当前实现状态。
+2. `docs/phase-0-system-boundaries.md`：GEO-BD / GEO 隔离、只读处方和闭环。
+3. `workflows/standard_path.md`：Prescription-driven Standard Path 的固定运行顺序。
+4. `schemas/geo-bd-handoff-v1.schema.json`：诊断处方向 GEO 的唯一标准入口。
+5. `schemas/geo-strategy-v1.schema.json`：Prescription → Strategy 的强制引用。
+6. `schemas/geo-retest-request-v1.schema.json`：GEO 只能请求复测，不能宣布诊断结果。
+7. `SKILL.md`：Standard Path 与 Legacy-compatible V4 执行规则。
+
+豆包、千问、DeepSeek、Codex 等平台必须保持两个系统的代码和逻辑隔离。只能读取 JSON Contract，不得导入或调用另一个仓库的模块、Engine 或 Pipeline。
+
+当前同时保留两条路径：`standard` 是关键词与九大画像主路径；`interactive` / `fast_path` 是 Legacy-compatible V4。标准模式必须有 GEO-BD 或 Manual Prescription，资料不足或 Contract 不合法时直接 Fail Closed。
+
+当前主交付只有关键词和九大画像：`keyword_matrix.xlsx`、`persona_report.md`，JSON 文件用于机器追溯。内容、信源、发布和复测不进入主交付。
+
+当前 Trust Score 仅表示资料完整度 / Evidence Readiness。GEO Report 只能汇总执行结果，不能重新生成 Judgment、RootCause、Diagnostic Score 或修改 GEO-BD Priority。

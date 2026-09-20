@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the GEO V4 fixed pipeline. Final exports are fail-closed."""
+"""Run either the isolated Standard Path or legacy-compatible V4 path."""
 
 import argparse
 import json
@@ -8,6 +8,8 @@ from pathlib import Path
 
 from core.fixed_pipeline import FixedPipeline, PipelineBlocked
 from core.output_renderer import render_final, write_json
+from core.standard_pipeline import StandardPathBlocked, StandardPathPipeline
+from core.standard_renderer import render_standard
 
 
 ROOT = Path(__file__).resolve().parent
@@ -33,14 +35,27 @@ def prepare_output(path):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Run the non-overridable GEO V4 fixed pipeline.")
+    parser = argparse.ArgumentParser(description="Run GEO Standard Path or legacy-compatible V4.")
     parser.add_argument("--input", type=Path, default=ROOT / "input" / "company.json")
+    parser.add_argument("--handoff", type=Path, help="GEO-BD or Manual Prescription JSON for standard mode")
     parser.add_argument("--output", type=Path, default=ROOT / "output")
-    parser.add_argument("--mode", choices=("interactive", "fast_path"), default="interactive")
+    parser.add_argument("--mode", choices=("interactive", "fast_path", "standard"), default="interactive")
     args = parser.parse_args()
 
     try:
         data = load_input(args.input)
+        if args.mode == "standard":
+            if args.handoff is None:
+                raise StandardPathBlocked("STANDARD-007: --handoff is required in standard mode")
+            handoff = load_input(args.handoff)
+            artifacts, _trace = StandardPathPipeline().run(handoff, data)
+            prepare_output(args.output)
+            render_standard(args.output, artifacts)
+            print(f"PASS: generated Prescription-driven Standard Path assets for {data['company_name']}")
+            for path in sorted(args.output.iterdir()):
+                print(path.name)
+            return
+
         prepare_output(args.output)
         pipeline = FixedPipeline(mode=args.mode)
         if args.mode == "interactive":
@@ -56,7 +71,7 @@ def main():
         print(f"PASS: generated validated GEO V4 assets for {data['company_name']}")
         for path in sorted(args.output.iterdir()):
             print(path.name)
-    except PipelineBlocked as exc:
+    except (PipelineBlocked, StandardPathBlocked) as exc:
         print(f"BLOCKED: {exc}")
         raise SystemExit(2)
 

@@ -1,0 +1,19 @@
+{
+  "handoff_version": "1.0.0",
+  "diagnostic_id": "DIAG-TEST-001",
+  "company_id": "COMPANY-TEST-001",
+  "company_name": "测试企业（仅验收数据）",
+  "source_system": "GEO-BD",
+  "target_system": "GEO",
+  "prescriptions": [
+    {
+      "id": "PRESCRIPTION-001",
+      "statement": "强化核心业务场景表达",
+      "priority": "P1",
+      "root_cause_ids": ["ROOT-001"],
+      "expected_outcome": "提升 AI 对企业核心业务场景的理解",
+      "verification_method": "复测相关 AI Query",
+      "handoff_to": "GEO"
+    }
+  ]
+}
