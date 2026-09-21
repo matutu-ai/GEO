@@ -561,7 +561,7 @@ class StandardPathPipeline:
     def _guidance_projection(self, intake, strategy_payload, fact_packet, keyword_payload, persona_payload, user_persona_payload):
         preferences = self._preferences
         custom_personas = bool(preferences["user_personas"])
-        requested_keywords = bool(preferences["requested_keywords"])
+        keyword_review_complete = bool(preferences["approved_keywords"])
         stages = [
             {
                 "stage_id": "delivery_selection",
@@ -590,10 +590,10 @@ class StandardPathPipeline:
             {
                 "stage_id": "keyword_review",
                 "name": "确认关键词分层",
-                "status": "READY_FOR_REVIEW",
-                "prompt": "请标记客户指定词、系统推荐词、待确认词和暂不使用词，并指出必须保留或禁止使用的表达。",
-                "recommendation": "关键词事实状态与客户是否想使用是两个维度，不能把 CONFIRMED 自动当作已批准。",
-                "requires_user_confirmation": True,
+                "status": "COMPLETE" if keyword_review_complete else "READY_FOR_REVIEW",
+                "prompt": "请按品牌词、搜索词、问答词、意图场景词分别标记保留、修改、删除或待确认，并决定系统推荐词是否加入正式词库。",
+                "recommendation": "先完成四类关键词确认；系统推荐词仅作参考，不自动视为已批准。",
+                "requires_user_confirmation": not keyword_review_complete,
             },
             {
                 "stage_id": "enterprise_persona_review",
@@ -615,7 +615,7 @@ class StandardPathPipeline:
         if not custom_personas:
             next_stage = "user_persona_confirmation"
             next_prompt = stages[2]["prompt"]
-        elif not requested_keywords:
+        elif not keyword_review_complete:
             next_stage = "keyword_review"
             next_prompt = stages[3]["prompt"]
         else:
@@ -650,8 +650,8 @@ class StandardPathPipeline:
                     "priority": "P0",
                     "title": "确认用户决策画像与关键词分层",
                     "reason": "画像决定关键词面向谁，关键词分层决定哪些词可以进入正式交付。",
-                    "next_action": "先确认 3—5 类重点用户，再标记客户指定词、系统推荐词和待确认词。",
-                    "status": "NEEDS_CONFIRMATION" if not custom_personas or not requested_keywords else "READY",
+                    "next_action": "先确认四类关键词的保留、修改、删除和待确认状态，再进入用户画像与企业九大画像确认。",
+                    "status": "NEEDS_CONFIRMATION" if not custom_personas or not keyword_review_complete else "READY",
                 },
                 {
                     "priority": "P1",

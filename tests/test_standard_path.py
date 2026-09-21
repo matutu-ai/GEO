@@ -231,7 +231,13 @@ class StandardPathTests(unittest.TestCase):
         requested = [item for item in artifacts["keyword_matrix"]["keywords"] if item["keyword"] == "测试企业代理加盟"]
         self.assertTrue(requested)
         self.assertEqual(requested[0]["keyword_origin"], "CLIENT_REQUESTED")
-        self.assertEqual(artifacts["guided_next_steps"]["recommended_next_stage"], "enterprise_persona_review")
+        self.assertEqual(artifacts["guided_next_steps"]["recommended_next_stage"], "keyword_review")
+
+        company["geo_preferences"]["approved_keywords"] = ["测试企业代理加盟"]
+        approved_artifacts, _ = StandardPathPipeline().run(handoff, company)
+        self.assertEqual(approved_artifacts["guided_next_steps"]["recommended_next_stage"], "enterprise_persona_review")
+        approved = [item for item in approved_artifacts["keyword_matrix"]["keywords"] if item["keyword"] == "测试企业代理加盟"]
+        self.assertEqual(approved[0]["decision_status"], "CONFIRMED")
 
     def test_19_legacy_interactive_still_passes(self):
         with tempfile.TemporaryDirectory() as directory:

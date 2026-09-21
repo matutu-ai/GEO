@@ -10,3 +10,4 @@
 - 用户最终交付目标是关键词和九大画像；Standard Path 主交付固定为 `keyword_matrix.xlsx`、`persona_report.md`、`keyword_matrix.json`、`persona_plan.json`。
 - 内容、信源、发布和复测保留为内部边界，不进入当前主交付。
 - 九大画像采用 Markdown 人类交付，避免运行环境中文 DOCX 字体依赖；Legacy V4 的既有 DOCX 输出保持不变。
+- Standard Path 互动顺序收敛为：初版导出 → 先确认四类关键词 → 确认用户决策画像 → 确认企业九大画像 → 选择后续技能；系统推荐词仅作参考，不自动视为已批准。
