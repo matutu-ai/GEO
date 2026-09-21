@@ -1,0 +1,234 @@
+{
+  "persona_version": "1.0.0",
+  "diagnostic_id": "DIAG-XUNLING-20260921-001",
+  "company_id": "COMPANY-XUNLING-001",
+  "personas": [
+    {
+      "persona_id": "PERSONA-001",
+      "name": "产品或服务描述",
+      "focus": "讯灵AI Claw3.0 GEO+Agent双引擎智能系统及渠道合作项目；讯灵AI招商加盟；讯灵AI区域代理；讯灵AI渠道合作",
+      "status": "READY",
+      "confirmed_content": [
+        "讯灵AI Claw3.0 GEO+Agent双引擎智能系统及渠道合作项目",
+        "讯灵AI招商加盟；讯灵AI区域代理；讯灵AI渠道合作"
+      ],
+      "unknown_content": [],
+      "missing_materials": [],
+      "forbidden_claims": [
+        "未绑定事实来源的案例、评价、资质和数据不得对外发布"
+      ],
+      "fact_ids": [
+        "fact-004",
+        "fact-011"
+      ],
+      "prescription_ids": [
+        "PRESCRIPTION-XUNLING-001"
+      ],
+      "strategy_ids": [
+        "STRATEGY-001"
+      ]
+    },
+    {
+      "persona_id": "PERSONA-002",
+      "name": "产品或服务特点",
+      "focus": "GEO内容训练与AI搜索获客；Agent客户承接；AI营销SaaS产品演示与渠道支持（支持边界待确认）；公开产品叙事将GEO获客与Agent客户承接组合在一起；公开资料存在AI营销SaaS与渠道合作方向；具体代理政策、交付支持和区域保护待企业确认",
+      "status": "READY",
+      "confirmed_content": [
+        "GEO内容训练与AI搜索获客；Agent客户承接；AI营销SaaS产品演示与渠道支持（支持边界待确认）",
+        "公开产品叙事将GEO获客与Agent客户承接组合在一起；公开资料存在AI营销SaaS与渠道合作方向；具体代理政策、交付支持和区域保护待企业确认"
+      ],
+      "unknown_content": [],
+      "missing_materials": [],
+      "forbidden_claims": [
+        "未绑定事实来源的案例、评价、资质和数据不得对外发布"
+      ],
+      "fact_ids": [
+        "fact-007",
+        "fact-009"
+      ],
+      "prescription_ids": [
+        "PRESCRIPTION-XUNLING-001"
+      ],
+      "strategy_ids": [
+        "STRATEGY-001"
+      ]
+    },
+    {
+      "persona_id": "PERSONA-003",
+      "name": "品牌故事",
+      "focus": "AI营销SaaS与GEO+Agent双引擎智能系统，面向企业获客与渠道合作场景",
+      "status": "READY",
+      "confirmed_content": [
+        "AI营销SaaS与GEO+Agent双引擎智能系统，面向企业获客与渠道合作场景"
+      ],
+      "unknown_content": [],
+      "missing_materials": [
+        "brand_story",
+        "development_history"
+      ],
+      "forbidden_claims": [
+        "未绑定事实来源的案例、评价、资质和数据不得对外发布"
+      ],
+      "fact_ids": [
+        "fact-003"
+      ],
+      "prescription_ids": [
+        "PRESCRIPTION-XUNLING-001"
+      ],
+      "strategy_ids": [
+        "STRATEGY-001"
+      ]
+    },
+    {
+      "persona_id": "PERSONA-004",
+      "name": "用户痛点",
+      "focus": "客户开始询问AI搜索获客，但现有服务缺少对应产品；缺少可复制的产品演示、销售话术和总部支持边界；网上同名主体和招商模板较多，合作主体与政策难核验；考察AI营销代理项目；申请区域代理或渠道合作；为本地企业承接AI搜索获客需求；传统SEO/SEM服务商增加GEO产品线",
+      "status": "READY",
+      "confirmed_content": [
+        "客户开始询问AI搜索获客，但现有服务缺少对应产品；缺少可复制的产品演示、销售话术和总部支持边界；网上同名主体和招商模板较多，合作主体与政策难核验",
+        "考察AI营销代理项目；申请区域代理或渠道合作；为本地企业承接AI搜索获客需求；传统SEO/SEM服务商增加GEO产品线"
+      ],
+      "unknown_content": [],
+      "missing_materials": [],
+      "forbidden_claims": [
+        "未绑定事实来源的案例、评价、资质和数据不得对外发布"
+      ],
+      "fact_ids": [
+        "fact-008",
+        "fact-013"
+      ],
+      "prescription_ids": [
+        "PRESCRIPTION-XUNLING-001"
+      ],
+      "strategy_ids": [
+        "STRATEGY-001"
+      ]
+    },
+    {
+      "persona_id": "PERSONA-005",
+      "name": "信任背书",
+      "focus": "qualifications：公开产品页提及合作与资质线索，证书编号和主体待企业确认；certifications：公开资料提及算法备案、合作伙伴等口径，未纳入定稿事实",
+      "status": "READY",
+      "confirmed_content": [
+        "qualifications：公开产品页提及合作与资质线索，证书编号和主体待企业确认；certifications：公开资料提及算法备案、合作伙伴等口径，未纳入定稿事实"
+      ],
+      "unknown_content": [],
+      "missing_materials": [],
+      "forbidden_claims": [
+        "未绑定事实来源的案例、评价、资质和数据不得对外发布"
+      ],
+      "fact_ids": [
+        "fact-016"
+      ],
+      "prescription_ids": [
+        "PRESCRIPTION-XUNLING-001"
+      ],
+      "strategy_ids": [
+        "STRATEGY-001"
+      ]
+    },
+    {
+      "persona_id": "PERSONA-006",
+      "name": "客户案例",
+      "focus": "NOT_IMPLEMENTED：缺少已确认资料，不生成未经确认内容",
+      "status": "NOT_IMPLEMENTED",
+      "confirmed_content": [],
+      "unknown_content": [
+        "【需企业提供真实佐证】"
+      ],
+      "missing_materials": [
+        "evidence.cases"
+      ],
+      "forbidden_claims": [
+        "未绑定事实来源的案例、评价、资质和数据不得对外发布"
+      ],
+      "fact_ids": [
+        "fact-001"
+      ],
+      "prescription_ids": [
+        "PRESCRIPTION-XUNLING-001"
+      ],
+      "strategy_ids": [
+        "STRATEGY-001"
+      ]
+    },
+    {
+      "persona_id": "PERSONA-007",
+      "name": "社会贡献",
+      "focus": "NOT_IMPLEMENTED：缺少已确认资料，不生成未经确认内容",
+      "status": "NOT_IMPLEMENTED",
+      "confirmed_content": [],
+      "unknown_content": [
+        "【需企业提供真实佐证】"
+      ],
+      "missing_materials": [
+        "social_contributions",
+        "environmental_contributions",
+        "local_contributions",
+        "public_welfare_actions"
+      ],
+      "forbidden_claims": [
+        "未绑定事实来源的案例、评价、资质和数据不得对外发布"
+      ],
+      "fact_ids": [
+        "fact-001"
+      ],
+      "prescription_ids": [
+        "PRESCRIPTION-XUNLING-001"
+      ],
+      "strategy_ids": [
+        "STRATEGY-001"
+      ]
+    },
+    {
+      "persona_id": "PERSONA-008",
+      "name": "客户评价",
+      "focus": "NOT_IMPLEMENTED：缺少已确认资料，不生成未经确认内容",
+      "status": "NOT_IMPLEMENTED",
+      "confirmed_content": [],
+      "unknown_content": [
+        "【需企业提供真实佐证】"
+      ],
+      "missing_materials": [
+        "evidence.reviews"
+      ],
+      "forbidden_claims": [
+        "未绑定事实来源的案例、评价、资质和数据不得对外发布"
+      ],
+      "fact_ids": [
+        "fact-001"
+      ],
+      "prescription_ids": [
+        "PRESCRIPTION-XUNLING-001"
+      ],
+      "strategy_ids": [
+        "STRATEGY-001"
+      ]
+    },
+    {
+      "persona_id": "PERSONA-009",
+      "name": "创始人介绍",
+      "focus": "NOT_IMPLEMENTED：缺少已确认资料，不生成未经确认内容",
+      "status": "NOT_IMPLEMENTED",
+      "confirmed_content": [],
+      "unknown_content": [
+        "【需企业提供真实佐证】"
+      ],
+      "missing_materials": [
+        "founder"
+      ],
+      "forbidden_claims": [
+        "未绑定事实来源的案例、评价、资质和数据不得对外发布"
+      ],
+      "fact_ids": [
+        "fact-001"
+      ],
+      "prescription_ids": [
+        "PRESCRIPTION-XUNLING-001"
+      ],
+      "strategy_ids": [
+        "STRATEGY-001"
+      ]
+    }
+  ]
+}

@@ -8,11 +8,13 @@ from validators.contract_validator import (
     validate_execution_projection,
     validate_geo_bd_handoff,
     validate_geo_strategy,
+    validate_guided_next_steps,
     validate_intent_strategy,
     validate_keyword_strategy,
     validate_manual_prescription_input,
     validate_persona_plan,
     validate_retest_request,
+    validate_user_persona_plan,
 )
 
 
@@ -26,6 +28,8 @@ STANDARD_STAGES = (
     "intent_strategy",
     "keyword_strategy",
     "persona_strategy",
+    "user_persona_strategy",
+    "guidance_projection",
     "execution_projection",
 )
 FACT_FIELDS = (
@@ -85,9 +89,11 @@ class StandardPathPipeline:
         self.trace = {"pipeline_id": "geo-standard-path-v1", "stages": [], "status": "RUNNING"}
         self._handoff = None
         self._prescription_snapshot = None
+        self._preferences = {}
 
     def run(self, handoff, company_data):
         try:
+            self._preferences = self._read_preferences(company_data)
             validated_handoff = self._validate_handoff(handoff)
             fact_packet = self._normalize_facts(company_data)
             prescription_intake = self._intake_prescriptions(validated_handoff)
@@ -97,8 +103,15 @@ class StandardPathPipeline:
             intents = self._intent_strategy(prescription_intake, strategy, fact_packet)
             keywords = self._keyword_strategy(prescription_intake, strategy, intents, fact_packet)
             personas = self._persona_strategy(prescription_intake, strategy, fact_packet)
+            user_personas = self._user_persona_strategy(
+                prescription_intake, strategy, keywords, fact_packet
+            )
+            guidance = self._guidance_projection(
+                prescription_intake, strategy, fact_packet, keywords, personas, user_personas
+            )
             execution, retest = self._execution_projection(
-                prescription_intake, strategy, intents, keywords, personas, fact_packet
+                prescription_intake, strategy, intents, keywords, personas, user_personas,
+                guidance, fact_packet
             )
         except ContractValidationError as exc:
             raise StandardPathBlocked(f"STANDARD_VALIDATION_BLOCKED: {exc}") from exc
@@ -114,6 +127,8 @@ class StandardPathPipeline:
             "geo_strategy": strategy,
             "keyword_matrix": keywords,
             "persona_plan": personas,
+            "user_persona_plan": user_personas,
+            "guided_next_steps": guidance,
             "execution": execution,
             "retest_request": retest,
             "company_context": company_context,
@@ -173,6 +188,30 @@ class StandardPathPipeline:
         packet = {"facts": facts, "fact_map": fact_map}
         self._record("fact_normalization", "confirmed_fact_packet")
         return packet
+
+    def _read_preferences(self, company_data):
+        raw = company_data.get("geo_preferences", {}) if isinstance(company_data, dict) else {}
+        if raw is None:
+            raw = {}
+        if not isinstance(raw, dict):
+            raise StandardPathBlocked("STANDARD-010: geo_preferences must be an object")
+        delivery_mode = raw.get("delivery_mode", "完整版")
+        if delivery_mode not in ("简约版", "完整版"):
+            raise StandardPathBlocked("STANDARD-011: delivery_mode must be 简约版 or 完整版")
+        list_fields = ("requested_keywords", "excluded_keywords", "approved_keywords", "user_personas")
+        for field in list_fields:
+            if field in raw and not isinstance(raw[field], list):
+                raise StandardPathBlocked(f"STANDARD-012: geo_preferences.{field} must be an array")
+        return {
+            "provided": "geo_preferences" in company_data,
+            "delivery_mode": delivery_mode,
+            "primary_objective": str(raw.get("primary_objective", "关键词与画像整理")),
+            "vertical_business": str(raw.get("vertical_business", "")),
+            "requested_keywords": deepcopy(raw.get("requested_keywords", [])),
+            "excluded_keywords": deepcopy(raw.get("excluded_keywords", [])),
+            "approved_keywords": deepcopy(raw.get("approved_keywords", [])),
+            "user_personas": deepcopy(raw.get("user_personas", [])),
+        }
 
     def _intake_prescriptions(self, handoff):
         intake = {
@@ -272,29 +311,49 @@ class StandardPathPipeline:
         business = _first_text(facts["main_businesses"]["value"])
         product = _first_text(facts["products"]["value"])
         supplied_intents = facts["user_intents"]["value"] if facts["user_intents"]["status"] == "CONFIRMED" else []
+        supplied_candidates = []
+        if isinstance(supplied_intents, list):
+            supplied_candidates.extend(
+                {
+                    "keyword": item.get("keyword"),
+                    "keyword_type": item.get("keyword_type"),
+                    "user_scenario": item.get("user_scenario"),
+                    "search_intent": item.get("search_intent"),
+                    "persona_unit": item.get("persona_unit"),
+                    "_origin": "CLIENT_REQUESTED",
+                    "_from_user_intents": True,
+                }
+                for item in supplied_intents
+                if isinstance(item, dict)
+                and _present(item.get("keyword"))
+                and item.get("keyword_type") in KEYWORD_TYPES
+            )
+        for item in self._preferences["requested_keywords"]:
+            if isinstance(item, str) and _present(item):
+                supplied_candidates.append({
+                    "keyword": item,
+                    "keyword_type": "搜索词",
+                    "_origin": "CLIENT_REQUESTED",
+                })
+            elif isinstance(item, dict) and _present(item.get("keyword")):
+                supplied_candidates.append({
+                    "keyword": item["keyword"],
+                    "keyword_type": item.get("keyword_type", "搜索词"),
+                    "user_scenario": item.get("user_scenario"),
+                    "search_intent": item.get("search_intent"),
+                    "persona_unit": item.get("persona_unit"),
+                    "_origin": "CLIENT_REQUESTED",
+                })
         keywords = []
         keyword_map = {}
         for intent in intent_payload["intents"]:
             candidates = [
-                {"keyword": company, "keyword_type": "品牌词"},
-                {"keyword": f"{company} {business}", "keyword_type": "搜索词"},
-                {"keyword": f"{business}如何选择", "keyword_type": "问答词"},
-                {"keyword": f"{intent['scenario']} {business}", "keyword_type": "意图场景词"},
+                {"keyword": company, "keyword_type": "品牌词", "_origin": "SYSTEM_RECOMMENDED"},
+                {"keyword": f"{company} {business}", "keyword_type": "搜索词", "_origin": "SYSTEM_RECOMMENDED"},
+                {"keyword": f"{business}如何选择", "keyword_type": "问答词", "_origin": "SYSTEM_RECOMMENDED"},
+                {"keyword": f"{intent['scenario']} {business}", "keyword_type": "意图场景词", "_origin": "SYSTEM_RECOMMENDED"},
             ]
-            if isinstance(supplied_intents, list):
-                candidates.extend(
-                    {
-                        "keyword": item.get("keyword"),
-                        "keyword_type": item.get("keyword_type"),
-                        "user_scenario": item.get("user_scenario"),
-                        "search_intent": item.get("search_intent"),
-                        "persona_unit": item.get("persona_unit"),
-                    }
-                    for item in supplied_intents
-                    if isinstance(item, dict)
-                    and _present(item.get("keyword"))
-                    and item.get("keyword_type") in KEYWORD_TYPES
-                )
+            candidates.extend(supplied_candidates)
             fact_ids = sorted(set(intent["fact_ids"] + [facts["company_name"]["fact_id"], facts["main_businesses"]["fact_id"]]))
             for candidate in candidates:
                 keyword = candidate["keyword"]
@@ -317,6 +376,12 @@ class StandardPathPipeline:
                         "evidence_status": "CONFIRMED",
                         "risk_level": "低",
                         "needs_confirmation": True,
+                        "keyword_origin": candidate.get("_origin", "SYSTEM_RECOMMENDED"),
+                        "decision_status": (
+                            "CONFIRMED" if keyword in self._preferences["approved_keywords"]
+                            else "PENDING_CONFIRMATION" if candidate.get("_origin") == "CLIENT_REQUESTED"
+                            else "RECOMMENDED"
+                        ),
                     }
                 else:
                     current = keyword_map[key]
@@ -324,6 +389,12 @@ class StandardPathPipeline:
                     current["prescription_ids"] = sorted(set(current["prescription_ids"] + intent["prescription_ids"]))
                     current["strategy_ids"] = sorted(set(current["strategy_ids"] + intent["strategy_ids"]))
                     current["intent_ids"] = sorted(set(current["intent_ids"] + [intent["id"]]))
+                    if candidate.get("_origin") == "CLIENT_REQUESTED":
+                        current["keyword_origin"] = "CLIENT_REQUESTED"
+                        current["decision_status"] = (
+                            "CONFIRMED" if keyword in self._preferences["approved_keywords"]
+                            else "PENDING_CONFIRMATION"
+                        )
         keywords = list(keyword_map.values())
         payload = {
             "keyword_version": "1.0.0",
@@ -397,7 +468,226 @@ class StandardPathPipeline:
         self._record("persona_strategy", "persona_plan")
         return payload
 
-    def _execution_projection(self, intake, strategy, intents, keywords, personas, fact_packet):
+    def _user_persona_strategy(self, intake, strategy_payload, keyword_payload, fact_packet):
+        facts = fact_packet["fact_map"]
+        target_value = facts["target_customers"]["value"]
+        raw_personas = self._preferences["user_personas"]
+        if raw_personas:
+            source_items = raw_personas[:5]
+            status = "CONFIRMED"
+        elif isinstance(target_value, list):
+            source_items = target_value[:5]
+            status = "NEEDS_CONFIRMATION"
+        else:
+            source_items = [target_value]
+            status = "NEEDS_CONFIRMATION"
+        scenario_value = facts["use_cases"]["value"] if facts["use_cases"]["status"] == "CONFIRMED" else facts["main_businesses"]["value"]
+        scenario = _first_text(scenario_value)
+        business = _first_text(facts["main_businesses"]["value"])
+        pain_value = facts["user_pain_points"]["value"] if facts["user_pain_points"]["status"] == "CONFIRMED" else []
+        criteria_value = facts["competitive_advantages"]["value"] if facts["competitive_advantages"]["status"] == "CONFIRMED" else []
+        supplied_queries = [
+            item for item in (facts["user_intents"]["value"] if facts["user_intents"]["status"] == "CONFIRMED" else [])
+            if isinstance(item, dict) and _present(item.get("keyword"))
+        ]
+        strategy_ids = [item["id"] for item in strategy_payload["strategies"]]
+        prescription_ids = [item["id"] for item in intake["prescriptions"]]
+        base_fact_ids = [facts["target_customers"]["fact_id"], facts["main_businesses"]["fact_id"]]
+        if facts["use_cases"]["status"] == "CONFIRMED":
+            base_fact_ids.append(facts["use_cases"]["fact_id"])
+        for field in ("user_pain_points", "competitive_advantages", "user_intents"):
+            if facts[field]["status"] == "CONFIRMED":
+                base_fact_ids.append(facts[field]["fact_id"])
+        personas = []
+        for index, item in enumerate(source_items, start=1):
+            if isinstance(item, dict):
+                name = str(item.get("name") or item.get("role") or item.get("title") or f"用户画像 {index}")
+                audience = str(item.get("audience") or item.get("description") or name)
+                item_scenario = str(item.get("scenario") or scenario)
+                decision_stage = str(item.get("decision_stage") or "认知期→考虑期→决策期")
+                pain_points = self._string_list(item.get("pain_points")) or self._string_list(pain_value)
+                criteria = self._string_list(item.get("decision_criteria")) or self._string_list(criteria_value)
+                queries = self._string_list(item.get("query_patterns"))
+                query_status = "CLIENT_REQUESTED" if queries else "SYSTEM_RECOMMENDED"
+            else:
+                name = _first_text(item) or f"用户画像 {index}"
+                audience = name
+                item_scenario = scenario
+                decision_stage = "认知期→考虑期→决策期"
+                pain_points = self._string_list(pain_value)
+                criteria = self._string_list(criteria_value)
+                queries = []
+                query_status = "SYSTEM_RECOMMENDED"
+            if not queries:
+                queries = [f"{business}是什么", f"{business}怎么选", f"{item_scenario}{business}怎么做"]
+            related_keyword_ids = [
+                keyword["keyword_id"] for keyword in keyword_payload["keywords"]
+                if keyword["user_scenario"] == item_scenario
+            ]
+            personas.append({
+                "user_persona_id": f"USER-PERSONA-{index:03d}",
+                "name": name,
+                "audience": audience,
+                "scenario": item_scenario,
+                "decision_stage": decision_stage,
+                "pain_points": pain_points,
+                "decision_criteria": criteria,
+                "query_patterns": queries,
+                "query_pattern_status": query_status,
+                "status": status,
+                "keyword_ids": sorted(set(related_keyword_ids)),
+                "fact_ids": sorted(set(base_fact_ids)),
+                "prescription_ids": prescription_ids,
+                "strategy_ids": strategy_ids,
+            })
+        payload = {
+            "user_persona_version": "1.0.0",
+            "diagnostic_id": intake["diagnostic_id"],
+            "company_id": intake["company_id"],
+            "personas": personas,
+        }
+        validate_user_persona_plan(payload, strategy_payload, self._handoff, keyword_payload)
+        self._record("user_persona_strategy", "user_persona_plan")
+        return payload
+
+    @staticmethod
+    def _string_list(value):
+        if isinstance(value, list):
+            return [str(item) for item in value if _present(item)]
+        if _present(value):
+            return [str(value)]
+        return []
+
+    def _guidance_projection(self, intake, strategy_payload, fact_packet, keyword_payload, persona_payload, user_persona_payload):
+        preferences = self._preferences
+        custom_personas = bool(preferences["user_personas"])
+        requested_keywords = bool(preferences["requested_keywords"])
+        stages = [
+            {
+                "stage_id": "delivery_selection",
+                "name": "选择交付版本与业务目标",
+                "status": "COMPLETE" if preferences["provided"] else "READY_FOR_REVIEW",
+                "prompt": "请选择简约版或完整版，并说明本次优先目标：品牌识别、业务获客、招商代理、用户教育或转化。",
+                "recommendation": "没有明确目标时，先使用完整版，但暂停正式导出，等待客户确认主业务线。",
+                "requires_user_confirmation": not preferences["provided"],
+            },
+            {
+                "stage_id": "evidence_confirmation",
+                "name": "确认资料与证据边界",
+                "status": "READY_FOR_REVIEW",
+                "prompt": "请确认企业主体、品牌名称、产品/服务、目标客户、业务边界，以及哪些资料可以公开引用。",
+                "recommendation": "主体关系、费用、案例、评价、资质和效果数字没有证据时保持待确认。",
+                "requires_user_confirmation": True,
+            },
+            {
+                "stage_id": "user_persona_confirmation",
+                "name": "确认用户决策画像",
+                "status": "COMPLETE" if custom_personas else "NEEDS_CONFIRMATION",
+                "prompt": "请确认 3—5 类重点用户：身份、场景、痛点、决策标准、阶段和典型问题。",
+                "recommendation": "如果用户画像尚未确认，下一步优先完成用户画像，不建议先扩写企业九大画像。",
+                "requires_user_confirmation": not custom_personas,
+            },
+            {
+                "stage_id": "keyword_review",
+                "name": "确认关键词分层",
+                "status": "READY_FOR_REVIEW",
+                "prompt": "请标记客户指定词、系统推荐词、待确认词和暂不使用词，并指出必须保留或禁止使用的表达。",
+                "recommendation": "关键词事实状态与客户是否想使用是两个维度，不能把 CONFIRMED 自动当作已批准。",
+                "requires_user_confirmation": True,
+            },
+            {
+                "stage_id": "enterprise_persona_review",
+                "name": "确认企业九大画像",
+                "status": "READY_FOR_REVIEW",
+                "prompt": "请逐项确认九大画像中哪些可以对外表达，哪些需要补资料，哪些本次不做。",
+                "recommendation": "用户决策画像确认后，再补企业九大画像；客户案例、评价、社会贡献和创始人介绍不得凭空补齐。",
+                "requires_user_confirmation": True,
+            },
+            {
+                "stage_id": "next_skill_decision",
+                "name": "选择后续技能",
+                "status": "COMPLETE",
+                "prompt": "关键词和画像确认后，是否继续生成 AI 推广总结，或暂时只保留当前词与画像交付？",
+                "recommendation": "先确认词和画像，再考虑 AI 推广总结；不要跳过证据确认直接进入内容发布或平台验证。",
+                "requires_user_confirmation": True,
+            },
+        ]
+        if not custom_personas:
+            next_stage = "user_persona_confirmation"
+            next_prompt = stages[2]["prompt"]
+        elif not requested_keywords:
+            next_stage = "keyword_review"
+            next_prompt = stages[3]["prompt"]
+        else:
+            next_stage = "enterprise_persona_review"
+            next_prompt = stages[4]["prompt"]
+        payload = {
+            "guidance_version": "1.0.0",
+            "diagnostic_id": intake["diagnostic_id"],
+            "company_id": intake["company_id"],
+            "delivery_mode": preferences["delivery_mode"],
+            "vertical_business": preferences["vertical_business"] or _first_text(fact_packet["fact_map"]["main_businesses"]["value"]),
+            "current_stage": "standard_export_review",
+            "recommended_next_stage": next_stage,
+            "next_prompt": next_prompt,
+            "decision_required": True,
+            "keyword_review": {
+                "client_requested": [
+                    item if isinstance(item, str) else item.get("keyword", "")
+                    for item in preferences["requested_keywords"]
+                    if (isinstance(item, str) and _present(item)) or (isinstance(item, dict) and _present(item.get("keyword")))
+                ],
+                "approved": [str(item) for item in preferences["approved_keywords"] if _present(item)],
+                "excluded": [
+                    item if isinstance(item, str) else item.get("keyword", "")
+                    for item in preferences["excluded_keywords"]
+                    if (isinstance(item, str) and _present(item)) or (isinstance(item, dict) and _present(item.get("keyword")))
+                ],
+            },
+            "stages": stages,
+            "optimization_directions": [
+                {
+                    "priority": "P0",
+                    "title": "确认用户决策画像与关键词分层",
+                    "reason": "画像决定关键词面向谁，关键词分层决定哪些词可以进入正式交付。",
+                    "next_action": "先确认 3—5 类重点用户，再标记客户指定词、系统推荐词和待确认词。",
+                    "status": "NEEDS_CONFIRMATION" if not custom_personas or not requested_keywords else "READY",
+                },
+                {
+                    "priority": "P1",
+                    "title": "补齐企业九大画像证据",
+                    "reason": "品牌故事、信任背书、案例、评价和创始人介绍需要可核验资料。",
+                    "next_action": "只补客户允许公开且有来源的材料，缺失部分保持待补。",
+                    "status": "NEEDS_CONFIRMATION",
+                },
+                {
+                    "priority": "P2",
+                    "title": "内容、信源、发布与复测",
+                    "reason": "这些属于后续执行阶段，不应在词和画像尚未确认时提前展开。",
+                    "next_action": "词和画像确认后，再由用户单独授权进入后续阶段。",
+                    "status": "NOT_IN_SCOPE",
+                },
+            ],
+            "skill_recommendations": [
+                {
+                    "skill": "geo-keyword-persona",
+                    "when": "用户决策画像或关键词仍需确认时",
+                    "reason": "继续细化画像、认知/考虑/决策阶段和自然语言问题词。",
+                    "next_decision": "确认哪些画像与词进入正式交付。",
+                },
+                {
+                    "skill": "ai-promotion-summary",
+                    "when": "关键词和画像已确认，准备形成品牌词、业务词和推广方向时",
+                    "reason": "把已确认的词和画像转成 AI 推广总结与可执行建议。",
+                    "next_decision": "决定先做推广总结，还是进入内容/信源阶段。",
+                },
+            ],
+        }
+        validate_guided_next_steps(payload, {"diagnostic_id": intake["diagnostic_id"], "company_id": intake["company_id"]})
+        self._record("guidance_projection", "guided_next_steps")
+        return payload
+
+    def _execution_projection(self, intake, strategy, intents, keywords, personas, user_personas, guidance, fact_packet):
         confirmed = [fact for fact in fact_packet["facts"] if fact["status"] == "CONFIRMED"]
         missing = [fact["field"] for fact in fact_packet["facts"] if fact["status"] != "CONFIRMED"]
         retest = {
@@ -421,6 +711,8 @@ class StandardPathPipeline:
             "intents": deepcopy(intents["intents"]),
             "keywords": deepcopy(keywords["keywords"]),
             "personas": deepcopy(personas["personas"]),
+            "user_personas": deepcopy(user_personas),
+            "guided_next_steps": deepcopy(guidance),
             "evidence_readiness": {
                 "status": "REFERENCE_ONLY",
                 "confirmed_fact_count": len(confirmed),
@@ -434,7 +726,7 @@ class StandardPathPipeline:
             "retest_request": deepcopy(retest),
         }
         validate_execution_projection(
-            execution, self._handoff, strategy, intents, keywords, personas
+            execution, self._handoff, strategy, intents, keywords, personas, user_personas, guidance
         )
         self._record("execution_projection", "execution")
         return execution, retest

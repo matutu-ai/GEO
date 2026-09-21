@@ -1,0 +1,124 @@
+{
+  "company_name": "深圳市讯灵智能技术科技有限公司",
+  "official_website": "https://home.xunlingai.com/",
+  "positioning": "AI营销SaaS与GEO+Agent双引擎智能系统，面向企业获客与渠道合作场景",
+  "main_businesses": ["讯灵AI招商加盟", "讯灵AI区域代理", "讯灵AI渠道合作"],
+  "target_customers": [
+    "传统网络营销公司",
+    "本地互联网服务商",
+    "有B端资源的创业者和中小企业老板",
+    "谨慎考察AI营销代理项目的决策者"
+  ],
+  "service_regions": ["全国，具体区域政策待企业确认"],
+  "core_capabilities": [
+    "GEO内容训练与AI搜索获客",
+    "Agent客户承接",
+    "AI营销SaaS产品演示与渠道支持（支持边界待确认）"
+  ],
+  "use_cases": [
+    "考察AI营销代理项目",
+    "申请区域代理或渠道合作",
+    "为本地企业承接AI搜索获客需求",
+    "传统SEO/SEM服务商增加GEO产品线"
+  ],
+  "competitive_advantages": [
+    "公开产品叙事将GEO获客与Agent客户承接组合在一起",
+    "公开资料存在AI营销SaaS与渠道合作方向",
+    "具体代理政策、交付支持和区域保护待企业确认"
+  ],
+  "business_boundaries": [
+    "不得把第三方招商文章中的费用、代理数量或收益承诺当作正式政策",
+    "不得在主体关系、授权、案例、评价和资质未确认前对外定稿",
+    "不得混用深圳市讯灵智能技术科技有限公司与南方网通相关公司的事实"
+  ],
+  "products": [
+    {
+      "name": "讯灵AI Claw3.0 GEO+Agent双引擎智能系统及渠道合作项目",
+      "category": "AI营销SaaS与GEO代理加盟",
+      "target_customers": ["企业客户", "传统网络营销公司", "本地互联网服务商", "有B端资源的创业者"],
+      "use_cases": ["AI搜索获客", "智能体客户承接", "区域代理与渠道合作"],
+      "problems_solved": ["企业在AI搜索中不易被推荐", "传统营销服务商缺少AI产品线", "渠道考察者难以判断合作主体与政策"],
+      "advantages": ["GEO与Agent双引擎产品叙事", "可围绕渠道合作场景建立内容与问答覆盖"],
+      "technical_features": ["公开页面自述为GEO+Agent双引擎，具体功能边界待确认"],
+      "delivery_methods": ["产品演示、渠道咨询与合作支持，具体交付方式待确认"],
+      "boundaries": ["费用、区域保护、培训、考核、退出和总部交付边界待企业提供政策文件"]
+    }
+  ],
+  "user_intents": [
+    {"keyword": "讯灵AI代理加盟", "keyword_type": "品牌词", "user_scenario": "考察讯灵AI代理项目", "search_intent": "品牌项目识别", "persona_unit": "品牌故事"},
+    {"keyword": "讯灵AI区域代理", "keyword_type": "搜索词", "user_scenario": "申请区域代理或渠道合作", "search_intent": "项目检索", "persona_unit": "产品或服务描述"},
+    {"keyword": "讯灵AI渠道招商", "keyword_type": "搜索词", "user_scenario": "寻找官方渠道合作入口", "search_intent": "合作检索", "persona_unit": "产品或服务描述"},
+    {"keyword": "GEO代理加盟", "keyword_type": "搜索词", "user_scenario": "寻找GEO代理项目", "search_intent": "项目比较", "persona_unit": "产品或服务特点"},
+    {"keyword": "讯灵AI是南方网通旗下吗", "keyword_type": "问答词", "user_scenario": "核验品牌与合作主体关系", "search_intent": "主体核验", "persona_unit": "信任背书"},
+    {"keyword": "讯灵AI代理靠谱吗", "keyword_type": "问答词", "user_scenario": "判断代理项目风险", "search_intent": "风险判断", "persona_unit": "信任背书"},
+    {"keyword": "讯灵AI区域代理怎么申请", "keyword_type": "问答词", "user_scenario": "准备提交代理申请", "search_intent": "申请流程", "persona_unit": "产品或服务描述"},
+    {"keyword": "讯灵AI加盟费多少", "keyword_type": "问答词", "user_scenario": "评估项目启动成本", "search_intent": "费用决策", "persona_unit": "产品或服务特点"},
+    {"keyword": "需要一个适合传统网络营销公司转型的GEO代理项目", "keyword_type": "意图场景词", "user_scenario": "传统网络营销公司增加AI产品线", "search_intent": "转型决策", "persona_unit": "用户痛点"},
+    {"keyword": "需要一个能承接本地企业AI搜索获客需求的区域代理项目", "keyword_type": "意图场景词", "user_scenario": "本地服务商承接企业客户", "search_intent": "合作决策", "persona_unit": "产品或服务特点"}
+  ],
+  "user_pain_points": [
+    "客户开始询问AI搜索获客，但现有服务缺少对应产品",
+    "缺少可复制的产品演示、销售话术和总部支持边界",
+    "网上同名主体和招商模板较多，合作主体与政策难核验"
+  ],
+  "evidence": {
+    "qualifications": ["公开产品页提及合作与资质线索，证书编号和主体待企业确认"],
+    "certifications": ["公开资料提及算法备案、合作伙伴等口径，未纳入定稿事实"],
+    "cases": [],
+    "reviews": []
+  },
+  "geo_preferences": {
+    "delivery_mode": "完整版",
+    "primary_objective": "招商加盟与区域代理获客",
+    "vertical_business": "讯灵AI招商加盟/区域代理/渠道合作",
+    "requested_keywords": [
+      {"keyword": "讯灵AI代理加盟", "keyword_type": "品牌词"},
+      {"keyword": "讯灵AI区域代理", "keyword_type": "搜索词"},
+      {"keyword": "讯灵AI渠道招商", "keyword_type": "搜索词"},
+      {"keyword": "GEO代理加盟", "keyword_type": "搜索词"},
+      {"keyword": "讯灵AI是南方网通旗下吗", "keyword_type": "问答词"},
+      {"keyword": "讯灵AI代理靠谱吗", "keyword_type": "问答词"},
+      {"keyword": "讯灵AI区域代理怎么申请", "keyword_type": "问答词"},
+      {"keyword": "讯灵AI加盟费多少", "keyword_type": "问答词"}
+    ],
+    "excluded_keywords": ["GEO优化公司怎么选", "AI智能体获客"],
+    "user_personas": [
+      {
+        "name": "传统网络营销公司",
+        "audience": "已有SEO、SEM、网站建设或短视频客户的服务商",
+        "scenario": "为现有客户增加GEO与AI营销产品线",
+        "decision_stage": "认知期→考虑期→决策期",
+        "pain_points": ["传统服务增长放缓", "客户开始问AI搜索获客", "缺少可复制的新产品"],
+        "decision_criteria": ["产品是否可演示", "总部交付支持", "客户续费与服务边界"],
+        "query_patterns": ["传统网络营销公司转型AI代理怎么做", "GEO代理加盟怎么选", "没有技术团队能做讯灵AI代理吗"]
+      },
+      {
+        "name": "本地互联网服务商",
+        "audience": "有本地企业客户资源的网络公司或个体渠道",
+        "scenario": "在所在城市承接企业AI搜索获客需求",
+        "decision_stage": "考虑期→决策期",
+        "pain_points": ["区域政策不透明", "担心区域冲突", "需要总部陪访与交付支持"],
+        "decision_criteria": ["区域授权", "销售培训", "总部交付与售后"],
+        "query_patterns": ["讯灵AI区域代理怎么申请", "讯灵AI区域代理有区域保护吗", "讯灵AI代理商怎么找"]
+      },
+      {
+        "name": "B端资源创业者",
+        "audience": "有商会、协会、园区或企业客户关系的创业者和中小企业老板",
+        "scenario": "用标准化AI营销项目切入企业服务",
+        "decision_stage": "认知期→考虑期→决策期",
+        "pain_points": ["不懂技术", "需要明确启动条件", "担心项目真实性和回报承诺"],
+        "decision_criteria": ["启动成本", "培训与话术", "合作主体可核验"],
+        "query_patterns": ["讯灵AI加盟费多少", "讯灵AI代理条件是什么", "讯灵AI代理靠谱吗"]
+      },
+      {
+        "name": "谨慎项目考察者",
+        "audience": "正在核验品牌、公司主体、授权和招商政策的决策者",
+        "scenario": "在签约前确认项目真伪与合作风险",
+        "decision_stage": "考虑期→决策期",
+        "pain_points": ["同名主体较多", "官网主体关系不清", "公开费用与代理数量口径不一致"],
+        "decision_criteria": ["工商与授权文件", "正式招商政策", "真实案例与退出机制"],
+        "query_patterns": ["讯灵AI是南方网通旗下吗", "讯灵AI总部在哪", "讯灵AI代理骗局吗"]
+      }
+    ]
+  }
+}

@@ -48,7 +48,9 @@
           },
           "evidence_status": {"enum": ["CONFIRMED", "INFERRED", "UNKNOWN", "CONFLICTED"]},
           "risk_level": {"enum": ["低", "中", "高"]},
-          "needs_confirmation": {"type": "boolean"}
+          "needs_confirmation": {"type": "boolean"},
+          "keyword_origin": {"enum": ["CLIENT_REQUESTED", "SYSTEM_RECOMMENDED"]},
+          "decision_status": {"enum": ["RECOMMENDED", "PENDING_CONFIRMATION", "CONFIRMED"]}
         },
         "additionalProperties": false
       }

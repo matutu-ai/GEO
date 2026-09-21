@@ -129,18 +129,44 @@ def validate_persona_plan(payload, strategy_payload, prescription_input):
     _validate_references(payload["personas"], "prescription_ids", prescription_ids, "personas")
 
 
+def validate_user_persona_plan(payload, strategy_payload, prescription_input, keyword_payload):
+    """Validate user decision personas and their traceability to keywords and upstream contracts."""
+    _validate(payload, _load_schema("user-persona-plan-v1.schema.json"))
+    validate_geo_strategy(strategy_payload, prescription_input)
+    _validate_identity(payload, strategy_payload, "user_persona")
+    _validate_unique_ids(payload["personas"], "user_persona_id", "user_personas")
+    strategy_ids = {item["id"] for item in strategy_payload["strategies"]}
+    prescription_ids = {item["id"] for item in prescription_input["prescriptions"]}
+    keyword_ids = {item["keyword_id"] for item in keyword_payload["keywords"]}
+    _validate_references(payload["personas"], "strategy_ids", strategy_ids, "user_personas")
+    _validate_references(payload["personas"], "prescription_ids", prescription_ids, "user_personas")
+    referenced_keywords = {keyword_id for item in payload["personas"] for keyword_id in item["keyword_ids"]}
+    missing_keywords = sorted(referenced_keywords - keyword_ids)
+    if missing_keywords:
+        raise ContractValidationError(f"user_personas.keyword_ids: unknown IDs: {missing_keywords}")
+
+
+def validate_guided_next_steps(payload, upstream):
+    """Validate user-facing prompts and the recommended next decision."""
+    _validate(payload, _load_schema("guided-next-steps-v1.schema.json"))
+    _validate_identity(payload, upstream, "guided_next_steps")
+
+
 def validate_retest_request(payload):
     """Validate a GEO -> GEO-BD request that asks for re-diagnosis without declaring results."""
     _validate(payload, _load_schema("geo-retest-request-v1.schema.json"))
 
 
 def validate_execution_projection(
-    payload, prescription_input, strategy_payload, intent_payload, keyword_payload, persona_payload
+    payload, prescription_input, strategy_payload, intent_payload, keyword_payload, persona_payload,
+    user_persona_payload, guidance_payload
 ):
     """Validate the closed standard projection without permitting parallel free-text objects."""
     _validate(payload, _load_schema("execution-v1.schema.json"))
     validate_keyword_strategy(keyword_payload, strategy_payload, intent_payload, prescription_input)
     validate_persona_plan(persona_payload, strategy_payload, prescription_input)
+    validate_user_persona_plan(user_persona_payload, strategy_payload, prescription_input, keyword_payload)
+    validate_guided_next_steps(guidance_payload, prescription_input)
     validate_retest_request(payload["retest_request"])
     _validate_identity(payload, prescription_input, "execution")
 
@@ -150,6 +176,8 @@ def validate_execution_projection(
         "intents": intent_payload["intents"],
         "keywords": keyword_payload["keywords"],
         "personas": persona_payload["personas"],
+        "user_personas": user_persona_payload,
+        "guided_next_steps": guidance_payload,
     }
     for field, value in expected.items():
         if payload[field] != value:

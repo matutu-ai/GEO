@@ -1,0 +1,19 @@
+{
+  "handoff_version": "1.0.0",
+  "diagnostic_id": "DIAG-XUNLING-20260921-001",
+  "company_id": "COMPANY-XUNLING-001",
+  "company_name": "深圳市讯灵智能技术科技有限公司",
+  "source_system": "MANUAL",
+  "target_system": "GEO",
+  "prescriptions": [
+    {
+      "id": "PRESCRIPTION-XUNLING-001",
+      "statement": "围绕讯灵AI招商加盟与区域代理垂直业务，先收敛用户决策画像和关键词分层",
+      "priority": "P0",
+      "root_cause_ids": ["ROOT-XUNLING-001"],
+      "expected_outcome": "形成可快速审阅的关键词、用户画像和垂直业务交付，并保留主体与招商政策待确认边界",
+      "verification_method": "检查三份主交付、关键词来源与决策状态、画像阶段和待确认项",
+      "handoff_to": "GEO"
+    }
+  ]
+}

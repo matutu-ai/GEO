@@ -29,6 +29,8 @@ GEO 决定：
 
 任何模型、智能体、平台或用户都不能改变阶段顺序、删除必需阶段、增加未授权阶段、重新生成事实、覆盖上游结果、将未知写成已知、将推断写成事实，或生成未经证实的案例、客户、评价、资质、数据和能力。校验失败时必须停止最终导出。
 
+Standard Path 的用户决策画像、阶段提示和下一步技能建议必须作为独立导出，不能与企业九大画像混为同一对象。对外主交付固定为三份：简约版词与画像、完整版词与画像、垂直业务画像。默认采用快速交互：先给核心结果，再提出一个确认问题；详细追溯放入 audit，不增加不必要的客户填写步骤。
+
 ## 3. Legacy-compatible V4 执行顺序
 
 当前程序加载 `core/execution_protocol.py` 与 `config/pipeline_policy.json`，按兼容 V4 固定执行：
@@ -76,7 +78,7 @@ handoff_validation → fact_normalization → prescription_intake
 → intent_strategy → keyword_strategy → persona_strategy → execution_projection
 ```
 
-Standard Path 内部生成 Strategy、Intent 和追溯数据，主交付为四类关键词与九大画像的 JSON、Excel 和 Markdown。内容、信源、发布和复测不进入当前主交付。无效输入 Fail Closed，禁止静默回退到 Legacy。
+Standard Path 内部生成 Strategy、Intent 和追溯数据，主交付为四类关键词、用户决策画像和企业九大画像的 JSON、Excel 和 Markdown，并生成 `guided_next_steps.md`。内容、信源、发布和复测不进入当前主交付。无效输入 Fail Closed，禁止静默回退到 Legacy。
 
 以下是当前 Legacy-compatible V4 的输入输出：所有输入先进入 `Fact_Packet`。下游只能读取通过校验的 Artifact，所有事实声明必须引用 `fact_id`。最终导出固定为：
 
@@ -110,7 +112,7 @@ output/
 
 不得跳过阶段、动态路由、修改上游 Artifact、修改 Prescription、重新定义 Root Cause、生成新的 Judgment 或 Diagnostic Score、重新定义企业定位、无事实生成关键词、输出无 `fact_id` 的声明，或将未授权研究和 legacy 流程带入默认执行。
 
-九大画像的名称和顺序固定为：产品或服务描述、产品或服务特点、品牌故事、用户痛点、信任背书、客户案例、社会贡献、客户评价、创始人介绍。关键词只能是品牌词、搜索词、问答词、意图场景词。未来每条关键词和每个画像单元都必须支持 `fact_ids`、`prescription_ids`、`strategy_ids`；当前 V4 仍只实现 `fact_ids`。
+九大画像的名称和顺序固定为：产品或服务描述、产品或服务特点、品牌故事、用户痛点、信任背书、客户案例、社会贡献、客户评价、创始人介绍。用户决策画像独立记录人群、场景、痛点、决策标准、决策阶段和典型问题。关键词只能是品牌词、搜索词、问答词、意图场景词，并额外区分 `CLIENT_REQUESTED` / `SYSTEM_RECOMMENDED` 来源和推荐/待确认状态。每条关键词、用户画像和企业画像单元都必须支持 `fact_ids`、`prescription_ids`、`strategy_ids`；当前 V4 仍只实现 `fact_ids`。
 
 ## 8. 错误处理
 

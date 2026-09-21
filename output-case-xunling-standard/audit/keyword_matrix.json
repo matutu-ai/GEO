@@ -1,0 +1,423 @@
+{
+  "keyword_version": "1.0.0",
+  "diagnostic_id": "DIAG-XUNLING-20260921-001",
+  "company_id": "COMPANY-XUNLING-001",
+  "keywords": [
+    {
+      "keyword_id": "KEYWORD-001",
+      "keyword": "深圳市讯灵智能技术科技有限公司",
+      "keyword_type": "品牌词",
+      "product_or_service": "讯灵AI Claw3.0 GEO+Agent双引擎智能系统及渠道合作项目",
+      "user_scenario": "考察AI营销代理项目",
+      "search_intent": "品牌识别",
+      "persona_unit": "品牌故事",
+      "fact_ids": [
+        "fact-001",
+        "fact-004",
+        "fact-005",
+        "fact-008"
+      ],
+      "prescription_ids": [
+        "PRESCRIPTION-XUNLING-001"
+      ],
+      "strategy_ids": [
+        "STRATEGY-001"
+      ],
+      "intent_ids": [
+        "INTENT-001"
+      ],
+      "evidence_status": "CONFIRMED",
+      "risk_level": "低",
+      "needs_confirmation": true,
+      "keyword_origin": "SYSTEM_RECOMMENDED",
+      "decision_status": "RECOMMENDED"
+    },
+    {
+      "keyword_id": "KEYWORD-002",
+      "keyword": "深圳市讯灵智能技术科技有限公司 讯灵AI招商加盟",
+      "keyword_type": "搜索词",
+      "product_or_service": "讯灵AI Claw3.0 GEO+Agent双引擎智能系统及渠道合作项目",
+      "user_scenario": "考察AI营销代理项目",
+      "search_intent": "业务检索",
+      "persona_unit": "产品或服务描述",
+      "fact_ids": [
+        "fact-001",
+        "fact-004",
+        "fact-005",
+        "fact-008"
+      ],
+      "prescription_ids": [
+        "PRESCRIPTION-XUNLING-001"
+      ],
+      "strategy_ids": [
+        "STRATEGY-001"
+      ],
+      "intent_ids": [
+        "INTENT-001"
+      ],
+      "evidence_status": "CONFIRMED",
+      "risk_level": "低",
+      "needs_confirmation": true,
+      "keyword_origin": "SYSTEM_RECOMMENDED",
+      "decision_status": "RECOMMENDED"
+    },
+    {
+      "keyword_id": "KEYWORD-003",
+      "keyword": "讯灵AI招商加盟如何选择",
+      "keyword_type": "问答词",
+      "product_or_service": "讯灵AI Claw3.0 GEO+Agent双引擎智能系统及渠道合作项目",
+      "user_scenario": "考察AI营销代理项目",
+      "search_intent": "问题解决",
+      "persona_unit": "用户痛点",
+      "fact_ids": [
+        "fact-001",
+        "fact-004",
+        "fact-005",
+        "fact-008"
+      ],
+      "prescription_ids": [
+        "PRESCRIPTION-XUNLING-001"
+      ],
+      "strategy_ids": [
+        "STRATEGY-001"
+      ],
+      "intent_ids": [
+        "INTENT-001"
+      ],
+      "evidence_status": "CONFIRMED",
+      "risk_level": "低",
+      "needs_confirmation": true,
+      "keyword_origin": "SYSTEM_RECOMMENDED",
+      "decision_status": "RECOMMENDED"
+    },
+    {
+      "keyword_id": "KEYWORD-004",
+      "keyword": "考察AI营销代理项目 讯灵AI招商加盟",
+      "keyword_type": "意图场景词",
+      "product_or_service": "讯灵AI Claw3.0 GEO+Agent双引擎智能系统及渠道合作项目",
+      "user_scenario": "考察AI营销代理项目",
+      "search_intent": "场景决策",
+      "persona_unit": "产品或服务特点",
+      "fact_ids": [
+        "fact-001",
+        "fact-004",
+        "fact-005",
+        "fact-008"
+      ],
+      "prescription_ids": [
+        "PRESCRIPTION-XUNLING-001"
+      ],
+      "strategy_ids": [
+        "STRATEGY-001"
+      ],
+      "intent_ids": [
+        "INTENT-001"
+      ],
+      "evidence_status": "CONFIRMED",
+      "risk_level": "低",
+      "needs_confirmation": true,
+      "keyword_origin": "SYSTEM_RECOMMENDED",
+      "decision_status": "RECOMMENDED"
+    },
+    {
+      "keyword_id": "KEYWORD-005",
+      "keyword": "讯灵AI代理加盟",
+      "keyword_type": "品牌词",
+      "product_or_service": "讯灵AI Claw3.0 GEO+Agent双引擎智能系统及渠道合作项目",
+      "user_scenario": "考察讯灵AI代理项目",
+      "search_intent": "品牌项目识别",
+      "persona_unit": "品牌故事",
+      "fact_ids": [
+        "fact-001",
+        "fact-004",
+        "fact-005",
+        "fact-008",
+        "fact-012"
+      ],
+      "prescription_ids": [
+        "PRESCRIPTION-XUNLING-001"
+      ],
+      "strategy_ids": [
+        "STRATEGY-001"
+      ],
+      "intent_ids": [
+        "INTENT-001"
+      ],
+      "evidence_status": "CONFIRMED",
+      "risk_level": "低",
+      "needs_confirmation": true,
+      "keyword_origin": "CLIENT_REQUESTED",
+      "decision_status": "PENDING_CONFIRMATION"
+    },
+    {
+      "keyword_id": "KEYWORD-006",
+      "keyword": "讯灵AI区域代理",
+      "keyword_type": "搜索词",
+      "product_or_service": "讯灵AI Claw3.0 GEO+Agent双引擎智能系统及渠道合作项目",
+      "user_scenario": "申请区域代理或渠道合作",
+      "search_intent": "项目检索",
+      "persona_unit": "产品或服务描述",
+      "fact_ids": [
+        "fact-001",
+        "fact-004",
+        "fact-005",
+        "fact-008",
+        "fact-012"
+      ],
+      "prescription_ids": [
+        "PRESCRIPTION-XUNLING-001"
+      ],
+      "strategy_ids": [
+        "STRATEGY-001"
+      ],
+      "intent_ids": [
+        "INTENT-001"
+      ],
+      "evidence_status": "CONFIRMED",
+      "risk_level": "低",
+      "needs_confirmation": true,
+      "keyword_origin": "CLIENT_REQUESTED",
+      "decision_status": "PENDING_CONFIRMATION"
+    },
+    {
+      "keyword_id": "KEYWORD-007",
+      "keyword": "讯灵AI渠道招商",
+      "keyword_type": "搜索词",
+      "product_or_service": "讯灵AI Claw3.0 GEO+Agent双引擎智能系统及渠道合作项目",
+      "user_scenario": "寻找官方渠道合作入口",
+      "search_intent": "合作检索",
+      "persona_unit": "产品或服务描述",
+      "fact_ids": [
+        "fact-001",
+        "fact-004",
+        "fact-005",
+        "fact-008",
+        "fact-012"
+      ],
+      "prescription_ids": [
+        "PRESCRIPTION-XUNLING-001"
+      ],
+      "strategy_ids": [
+        "STRATEGY-001"
+      ],
+      "intent_ids": [
+        "INTENT-001"
+      ],
+      "evidence_status": "CONFIRMED",
+      "risk_level": "低",
+      "needs_confirmation": true,
+      "keyword_origin": "CLIENT_REQUESTED",
+      "decision_status": "PENDING_CONFIRMATION"
+    },
+    {
+      "keyword_id": "KEYWORD-008",
+      "keyword": "GEO代理加盟",
+      "keyword_type": "搜索词",
+      "product_or_service": "讯灵AI Claw3.0 GEO+Agent双引擎智能系统及渠道合作项目",
+      "user_scenario": "寻找GEO代理项目",
+      "search_intent": "项目比较",
+      "persona_unit": "产品或服务特点",
+      "fact_ids": [
+        "fact-001",
+        "fact-004",
+        "fact-005",
+        "fact-008",
+        "fact-012"
+      ],
+      "prescription_ids": [
+        "PRESCRIPTION-XUNLING-001"
+      ],
+      "strategy_ids": [
+        "STRATEGY-001"
+      ],
+      "intent_ids": [
+        "INTENT-001"
+      ],
+      "evidence_status": "CONFIRMED",
+      "risk_level": "低",
+      "needs_confirmation": true,
+      "keyword_origin": "CLIENT_REQUESTED",
+      "decision_status": "PENDING_CONFIRMATION"
+    },
+    {
+      "keyword_id": "KEYWORD-009",
+      "keyword": "讯灵AI是南方网通旗下吗",
+      "keyword_type": "问答词",
+      "product_or_service": "讯灵AI Claw3.0 GEO+Agent双引擎智能系统及渠道合作项目",
+      "user_scenario": "核验品牌与合作主体关系",
+      "search_intent": "主体核验",
+      "persona_unit": "信任背书",
+      "fact_ids": [
+        "fact-001",
+        "fact-004",
+        "fact-005",
+        "fact-008",
+        "fact-012"
+      ],
+      "prescription_ids": [
+        "PRESCRIPTION-XUNLING-001"
+      ],
+      "strategy_ids": [
+        "STRATEGY-001"
+      ],
+      "intent_ids": [
+        "INTENT-001"
+      ],
+      "evidence_status": "CONFIRMED",
+      "risk_level": "低",
+      "needs_confirmation": true,
+      "keyword_origin": "CLIENT_REQUESTED",
+      "decision_status": "PENDING_CONFIRMATION"
+    },
+    {
+      "keyword_id": "KEYWORD-010",
+      "keyword": "讯灵AI代理靠谱吗",
+      "keyword_type": "问答词",
+      "product_or_service": "讯灵AI Claw3.0 GEO+Agent双引擎智能系统及渠道合作项目",
+      "user_scenario": "判断代理项目风险",
+      "search_intent": "风险判断",
+      "persona_unit": "信任背书",
+      "fact_ids": [
+        "fact-001",
+        "fact-004",
+        "fact-005",
+        "fact-008",
+        "fact-012"
+      ],
+      "prescription_ids": [
+        "PRESCRIPTION-XUNLING-001"
+      ],
+      "strategy_ids": [
+        "STRATEGY-001"
+      ],
+      "intent_ids": [
+        "INTENT-001"
+      ],
+      "evidence_status": "CONFIRMED",
+      "risk_level": "低",
+      "needs_confirmation": true,
+      "keyword_origin": "CLIENT_REQUESTED",
+      "decision_status": "PENDING_CONFIRMATION"
+    },
+    {
+      "keyword_id": "KEYWORD-011",
+      "keyword": "讯灵AI区域代理怎么申请",
+      "keyword_type": "问答词",
+      "product_or_service": "讯灵AI Claw3.0 GEO+Agent双引擎智能系统及渠道合作项目",
+      "user_scenario": "准备提交代理申请",
+      "search_intent": "申请流程",
+      "persona_unit": "产品或服务描述",
+      "fact_ids": [
+        "fact-001",
+        "fact-004",
+        "fact-005",
+        "fact-008",
+        "fact-012"
+      ],
+      "prescription_ids": [
+        "PRESCRIPTION-XUNLING-001"
+      ],
+      "strategy_ids": [
+        "STRATEGY-001"
+      ],
+      "intent_ids": [
+        "INTENT-001"
+      ],
+      "evidence_status": "CONFIRMED",
+      "risk_level": "低",
+      "needs_confirmation": true,
+      "keyword_origin": "CLIENT_REQUESTED",
+      "decision_status": "PENDING_CONFIRMATION"
+    },
+    {
+      "keyword_id": "KEYWORD-012",
+      "keyword": "讯灵AI加盟费多少",
+      "keyword_type": "问答词",
+      "product_or_service": "讯灵AI Claw3.0 GEO+Agent双引擎智能系统及渠道合作项目",
+      "user_scenario": "评估项目启动成本",
+      "search_intent": "费用决策",
+      "persona_unit": "产品或服务特点",
+      "fact_ids": [
+        "fact-001",
+        "fact-004",
+        "fact-005",
+        "fact-008",
+        "fact-012"
+      ],
+      "prescription_ids": [
+        "PRESCRIPTION-XUNLING-001"
+      ],
+      "strategy_ids": [
+        "STRATEGY-001"
+      ],
+      "intent_ids": [
+        "INTENT-001"
+      ],
+      "evidence_status": "CONFIRMED",
+      "risk_level": "低",
+      "needs_confirmation": true,
+      "keyword_origin": "CLIENT_REQUESTED",
+      "decision_status": "PENDING_CONFIRMATION"
+    },
+    {
+      "keyword_id": "KEYWORD-013",
+      "keyword": "需要一个适合传统网络营销公司转型的GEO代理项目",
+      "keyword_type": "意图场景词",
+      "product_or_service": "讯灵AI Claw3.0 GEO+Agent双引擎智能系统及渠道合作项目",
+      "user_scenario": "传统网络营销公司增加AI产品线",
+      "search_intent": "转型决策",
+      "persona_unit": "用户痛点",
+      "fact_ids": [
+        "fact-001",
+        "fact-004",
+        "fact-005",
+        "fact-008",
+        "fact-012"
+      ],
+      "prescription_ids": [
+        "PRESCRIPTION-XUNLING-001"
+      ],
+      "strategy_ids": [
+        "STRATEGY-001"
+      ],
+      "intent_ids": [
+        "INTENT-001"
+      ],
+      "evidence_status": "CONFIRMED",
+      "risk_level": "低",
+      "needs_confirmation": true,
+      "keyword_origin": "CLIENT_REQUESTED",
+      "decision_status": "PENDING_CONFIRMATION"
+    },
+    {
+      "keyword_id": "KEYWORD-014",
+      "keyword": "需要一个能承接本地企业AI搜索获客需求的区域代理项目",
+      "keyword_type": "意图场景词",
+      "product_or_service": "讯灵AI Claw3.0 GEO+Agent双引擎智能系统及渠道合作项目",
+      "user_scenario": "本地服务商承接企业客户",
+      "search_intent": "合作决策",
+      "persona_unit": "产品或服务特点",
+      "fact_ids": [
+        "fact-001",
+        "fact-004",
+        "fact-005",
+        "fact-008",
+        "fact-012"
+      ],
+      "prescription_ids": [
+        "PRESCRIPTION-XUNLING-001"
+      ],
+      "strategy_ids": [
+        "STRATEGY-001"
+      ],
+      "intent_ids": [
+        "INTENT-001"
+      ],
+      "evidence_status": "CONFIRMED",
+      "risk_level": "低",
+      "needs_confirmation": true,
+      "keyword_origin": "CLIENT_REQUESTED",
+      "decision_status": "PENDING_CONFIRMATION"
+    }
+  ]
+}

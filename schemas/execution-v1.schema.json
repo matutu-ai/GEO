@@ -13,6 +13,8 @@
     "intents",
     "keywords",
     "personas",
+    "user_personas",
+    "guided_next_steps",
     "evidence_readiness",
     "content_projection",
     "source_projection",
@@ -29,6 +31,8 @@
     "intents": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/intent"}},
     "keywords": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/keyword"}},
     "personas": {"type": "array", "minItems": 9, "maxItems": 9, "items": {"$ref": "#/$defs/persona"}},
+    "user_personas": {"$ref": "#/$defs/userPersonaPlan"},
+    "guided_next_steps": {"$ref": "#/$defs/guidedNextSteps"},
     "evidence_readiness": {"$ref": "#/$defs/evidenceReadiness"},
     "content_projection": {"$ref": "#/$defs/notImplemented"},
     "source_projection": {"$ref": "#/$defs/notImplemented"},
@@ -95,7 +99,9 @@
         "intent_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^INTENT-.+$"}},
         "evidence_status": {"enum": ["CONFIRMED", "INFERRED", "UNKNOWN", "CONFLICTED"]},
         "risk_level": {"enum": ["低", "中", "高"]},
-        "needs_confirmation": {"type": "boolean"}
+        "needs_confirmation": {"type": "boolean"},
+        "keyword_origin": {"enum": ["CLIENT_REQUESTED", "SYSTEM_RECOMMENDED"]},
+        "decision_status": {"enum": ["RECOMMENDED", "PENDING_CONFIRMATION", "CONFIRMED"]}
       },
       "additionalProperties": false
     },
@@ -147,6 +153,128 @@
         "executed_prescription_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^PRESCRIPTION-.+$"}},
         "executed_strategy_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^STRATEGY-.+$"}},
         "retest_targets": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]*$"}}
+      },
+      "additionalProperties": false
+    },
+    "userPersonaPlan": {
+      "type": "object",
+      "required": ["user_persona_version", "diagnostic_id", "company_id", "personas"],
+      "properties": {
+        "user_persona_version": {"const": "1.0.0"},
+        "diagnostic_id": {"type": "string", "minLength": 1},
+        "company_id": {"type": "string", "minLength": 1},
+        "personas": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 5,
+          "items": {"$ref": "#/$defs/userPersona"}
+        }
+      },
+      "additionalProperties": false
+    },
+    "userPersona": {
+      "type": "object",
+      "required": [
+        "user_persona_id", "name", "audience", "scenario", "decision_stage",
+        "pain_points", "decision_criteria", "query_patterns", "query_pattern_status",
+        "status", "keyword_ids", "fact_ids", "prescription_ids", "strategy_ids"
+      ],
+      "properties": {
+        "user_persona_id": {"type": "string", "pattern": "^USER-PERSONA-.+$"},
+        "name": {"type": "string", "minLength": 1},
+        "audience": {"type": "string", "minLength": 1},
+        "scenario": {"type": "string", "minLength": 1},
+        "decision_stage": {"type": "string", "minLength": 1},
+        "pain_points": {"type": "array", "items": {"type": "string"}},
+        "decision_criteria": {"type": "array", "items": {"type": "string"}},
+        "query_patterns": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+        "query_pattern_status": {"enum": ["CLIENT_REQUESTED", "SYSTEM_RECOMMENDED", "MIXED"]},
+        "status": {"enum": ["CONFIRMED", "NEEDS_CONFIRMATION"]},
+        "keyword_ids": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^KEYWORD-.+$"}},
+        "fact_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "prescription_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^PRESCRIPTION-.+$"}},
+        "strategy_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^STRATEGY-.+$"}}
+      },
+      "additionalProperties": false
+    },
+    "guidedNextSteps": {
+      "type": "object",
+      "required": [
+        "guidance_version", "diagnostic_id", "company_id", "delivery_mode", "vertical_business",
+        "current_stage", "recommended_next_stage", "next_prompt", "decision_required",
+        "stages", "skill_recommendations", "optimization_directions", "keyword_review"
+      ],
+      "properties": {
+        "guidance_version": {"const": "1.0.0"},
+        "diagnostic_id": {"type": "string", "minLength": 1},
+        "company_id": {"type": "string", "minLength": 1},
+        "delivery_mode": {"enum": ["简约版", "完整版"]},
+        "vertical_business": {"type": "string", "minLength": 1},
+        "current_stage": {"type": "string", "minLength": 1},
+        "recommended_next_stage": {"type": "string", "minLength": 1},
+        "next_prompt": {"type": "string", "minLength": 1},
+        "decision_required": {"type": "boolean"},
+        "stages": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/guidanceStage"}
+        },
+        "skill_recommendations": {
+          "type": "array",
+          "minItems": 1,
+            "items": {"$ref": "#/$defs/skillRecommendation"}
+        },
+        "optimization_directions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/optimizationDirection"}
+        },
+        "keyword_review": {
+          "type": "object",
+          "required": ["client_requested", "approved", "excluded"],
+          "properties": {
+            "client_requested": {"type": "array", "items": {"type": "string"}},
+            "approved": {"type": "array", "items": {"type": "string"}},
+            "excluded": {"type": "array", "items": {"type": "string"}}
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "guidanceStage": {
+      "type": "object",
+      "required": ["stage_id", "name", "status", "prompt", "recommendation", "requires_user_confirmation"],
+      "properties": {
+        "stage_id": {"type": "string", "pattern": "^[a-z0-9_]+$"},
+        "name": {"type": "string", "minLength": 1},
+        "status": {"enum": ["COMPLETE", "READY_FOR_REVIEW", "NEEDS_CONFIRMATION", "NOT_IN_SCOPE"]},
+        "prompt": {"type": "string", "minLength": 1},
+        "recommendation": {"type": "string", "minLength": 1},
+        "requires_user_confirmation": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "skillRecommendation": {
+      "type": "object",
+      "required": ["skill", "when", "reason", "next_decision"],
+      "properties": {
+        "skill": {"type": "string", "minLength": 1},
+        "when": {"type": "string", "minLength": 1},
+        "reason": {"type": "string", "minLength": 1},
+        "next_decision": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "optimizationDirection": {
+      "type": "object",
+      "required": ["priority", "title", "reason", "next_action", "status"],
+      "properties": {
+        "priority": {"enum": ["P0", "P1", "P2"]},
+        "title": {"type": "string", "minLength": 1},
+        "reason": {"type": "string", "minLength": 1},
+        "next_action": {"type": "string", "minLength": 1},
+        "status": {"enum": ["READY", "NEEDS_CONFIRMATION", "NOT_IN_SCOPE"]}
       },
       "additionalProperties": false
     }

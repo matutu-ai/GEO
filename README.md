@@ -68,12 +68,32 @@ python3 main.py --mode standard \
   --output output-standard
 ```
 
-Standard Path 输出：
+Standard Path 对外只输出三份核心结果：
 
-- `keyword_matrix.json`：机器可读、带事实/处方/策略追溯的关键词矩阵。
-- `persona_plan.json`：机器可读的九大画像计划。
-- `keyword_matrix.xlsx`：按四类关键词分 Sheet 的交付表格。
-- `persona_report.md`：九大画像交付文档。
+- `01_简约版-词与画像.md`：快速审阅和快速使用。
+- `02_完整版-词与画像.md`：完整关键词、用户决策画像和企业九大画像。
+- `03_垂直业务画像.md`：单一垂直业务的人群、场景、关键词和画像。
+
+完整 JSON、Excel、证据追溯和详细提示统一放在 `audit/`，不作为主交付阅读入口。
+
+默认采用快速交互：客户提供最少必要资料后直接生成一版核心结果，只提出一个下一步确认问题；需要详细核验时再查看 `guided_next_steps.md`。
+
+可选的 `geo_preferences` 用于记录客户选择，不改变固定 Pipeline：
+
+```json
+{
+  "geo_preferences": {
+    "delivery_mode": "完整版",
+    "primary_objective": "业务获客",
+    "requested_keywords": [],
+    "excluded_keywords": [],
+    "approved_keywords": [],
+    "user_personas": []
+  }
+}
+```
+
+导出规则：客户指定词、系统推荐词、待确认词和暂不使用词分层；证据状态与客户是否批准使用是两个维度。用户决策画像确认前，下一步建议优先完成画像，不进入内容发布或平台验证。
 
 ## 验证
 
