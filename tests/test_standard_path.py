@@ -6,9 +6,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
-import zipfile
 from pathlib import Path
-from xml.etree import ElementTree as ET
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -27,10 +25,7 @@ from validators.contract_validator import (
 
 
 STANDARD_OUTPUTS = {
-    "01_简约版-词与画像.md",
-    "02_完整版-词与画像.md",
-    "03_垂直业务画像.md",
-    "audit",
+    "GEO训练与运营词画像.md",
 }
 
 
@@ -158,34 +153,38 @@ class StandardPathTests(unittest.TestCase):
             self.assertFalse(output.exists())
             self.assertNotIn("generated validated GEO V4 assets", result.stdout)
 
-    def test_14_standard_outputs_keyword_workbook(self):
+    def test_14_standard_outputs_one_training_and_operations_brief(self):
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory) / "output"
             result = self._run_standard_cli(output)
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-            with zipfile.ZipFile(output / "audit" / "keyword_matrix.xlsx") as archive:
-                workbook = ET.fromstring(archive.read("xl/workbook.xml"))
-            namespace = "{http://schemas.openxmlformats.org/spreadsheetml/2006/main}"
-            self.assertEqual(
-                [node.get("name") for node in workbook.findall(f".//{namespace}sheet")],
-                ["品牌词", "搜索词", "问答词", "意图场景词"],
-            )
+            self.assertEqual({path.name for path in output.iterdir()}, STANDARD_OUTPUTS)
+            content = (output / "GEO训练与运营词画像.md").read_text(encoding="utf-8")
+            for kind in ("品牌词", "搜索词", "问答词", "意图场景词"):
+                self.assertIn(f"### {kind}｜", content)
+            for purpose in ("训练品牌识别", "训练使用场景", "训练业务需求", "训练明确需求"):
+                self.assertIn(purpose, content)
+            self.assertIn("## 九大画像与运营价值", content)
+            self.assertIn("系统推荐，待确认", content)
+            self.assertNotIn("你的选择", content)
 
     def test_15_standard_outputs_persona_markdown(self):
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory) / "output"
             result = self._run_standard_cli(output)
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-            content = (output / "audit" / "persona_report.md").read_text(encoding="utf-8")
+            content = (output / "GEO训练与运营词画像.md").read_text(encoding="utf-8")
             for name in PERSONA_UNITS:
-                self.assertIn(f"## {name}", content)
+                self.assertIn(f"| {name} |", content)
+            self.assertIn("选择后的运营优势", content)
 
     def test_16_standard_outputs_traceable_keyword_fields(self):
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory) / "output"
             result = self._run_standard_cli(output)
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-            matrix = json.loads((output / "audit" / "keyword_matrix.json").read_text(encoding="utf-8"))
+            artifacts, _ = run_pipeline()
+            matrix = artifacts["keyword_matrix"]
             required = {
                 "keyword", "keyword_type", "product_or_service", "user_scenario",
                 "search_intent", "persona_unit", "fact_ids", "prescription_ids",
@@ -194,20 +193,24 @@ class StandardPathTests(unittest.TestCase):
             }
             self.assertTrue(matrix["keywords"])
             self.assertTrue(required.issubset(matrix["keywords"][0]))
+            generated = {item["keyword"] for item in matrix["keywords"] if item["keyword_origin"] == "SYSTEM_RECOMMENDED"}
+            self.assertIn("测试企业（仅验收数据）｜工业设备服务｜工业设备服务商", generated)
+            self.assertIn("在车间设备改造时，选择工业设备服务（工业设备服务商）", generated)
+            self.assertIn("工业企业考察工业设备服务时，应该比较哪些条件再做选择？", generated)
+            self.assertIn("需要一个用于车间设备改造的工业设备服务", generated)
 
     def test_17_standard_outputs_user_personas_and_guidance(self):
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory) / "output"
             result = self._run_standard_cli(output)
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-            user_plan = json.loads((output / "audit" / "user_persona_plan.json").read_text(encoding="utf-8"))
+            artifacts, _ = run_pipeline()
+            user_plan = artifacts["user_persona_plan"]
             self.assertTrue(user_plan["personas"])
             self.assertIn("decision_stage", user_plan["personas"][0])
-            guidance = (output / "audit" / "guided_next_steps.md").read_text(encoding="utf-8")
-            self.assertIn("相关技能建议", guidance)
-            self.assertIn("推荐下一阶段", guidance)
-            summary = (output / "audit" / "delivery_summary.md").read_text(encoding="utf-8")
-            self.assertIn("GEO 核心交付摘要", summary)
+            self.assertIn("next_prompt", artifacts["guided_next_steps"])
+            content = (output / "GEO训练与运营词画像.md").read_text(encoding="utf-8")
+            self.assertIn("## 下一步 GEO 运营", content)
 
     def test_18_standard_accepts_guided_preferences(self):
         handoff = load_json("geo-bd-handoff-v1.json")

@@ -37,7 +37,7 @@ V4_OUTPUTS = [
     "final_summary.json", "execution_trace.json",
 ]
 STANDARD_OUTPUTS = [
-    "01_简约版-词与画像.md", "02_完整版-词与画像.md", "03_垂直业务画像.md", "audit",
+    "GEO训练与运营词画像.md",
 ]
 failures = []
 
@@ -130,43 +130,20 @@ with tempfile.TemporaryDirectory() as temporary:
     if result.returncode:
         failures.append(f"standard path failed: {result.stdout}{result.stderr}")
     elif {path.name for path in standard.iterdir()} != set(STANDARD_OUTPUTS):
-        failures.append("standard path: output set does not match the four-file keyword/persona contract")
+        failures.append("standard path: output must be one GEO training/persona brief")
     else:
-        audit = standard / "audit"
-        for name in ["keyword_matrix.json", "persona_plan.json", "user_persona_plan.json"]:
-            try:
-                json.loads((audit / name).read_text(encoding="utf-8"))
-            except (OSError, json.JSONDecodeError) as exc:
-                failures.append(f"standard path: invalid {name}: {exc}")
         try:
-            with zipfile.ZipFile(audit / "keyword_matrix.xlsx") as archive:
-                workbook = ET.fromstring(archive.read("xl/workbook.xml"))
-                sheet_names = [node.get("name") for node in workbook.findall(".//{http://schemas.openxmlformats.org/spreadsheetml/2006/main}sheet")]
-                if sheet_names != ["品牌词", "搜索词", "问答词", "意图场景词"]:
-                    failures.append("standard path: keyword workbook sheets are not fixed")
-        except (OSError, KeyError, zipfile.BadZipFile, ET.ParseError) as exc:
-            failures.append(f"standard path: invalid keyword_matrix.xlsx: {exc}")
-        try:
-            report = (audit / "persona_report.md").read_text(encoding="utf-8")
+            report = (standard / STANDARD_OUTPUTS[0]).read_text(encoding="utf-8")
+            for heading in ["### 品牌词｜", "### 搜索词｜", "### 问答词｜", "### 意图场景词｜", "## 九大画像与运营价值"]:
+                if heading not in report:
+                    failures.append(f"standard path: worksheet missing {heading}")
             for heading in ["产品或服务描述", "产品或服务特点", "品牌故事", "用户痛点", "信任背书", "客户案例", "社会贡献", "客户评价", "创始人介绍"]:
-                if f"## {heading}" not in report:
-                    failures.append(f"standard path: persona report missing {heading}")
+                if f"| {heading} |" not in report:
+                    failures.append(f"standard path: worksheet missing {heading}")
+            if "训练品牌识别" not in report or "选择后的运营优势" not in report or "你的选择" in report:
+                failures.append("standard path: brief lacks training purpose, persona value, or includes selection worksheet")
         except OSError as exc:
-            failures.append(f"standard path: invalid persona_report.md: {exc}")
-        try:
-            user_report = (audit / "user_persona_report.md").read_text(encoding="utf-8")
-            if "用户决策画像" not in user_report:
-                failures.append("standard path: user persona report marker missing")
-            guidance = (audit / "guided_next_steps.md").read_text(encoding="utf-8")
-            for marker in ["每阶段提示建议", "相关技能建议", "推荐下一阶段"]:
-                if marker not in guidance:
-                    failures.append(f"standard path: guidance report missing {marker}")
-            summary = (audit / "delivery_summary.md").read_text(encoding="utf-8")
-            for marker in ["GEO 核心交付摘要", "关键词速览", "用户决策画像速览", "下一步方向"]:
-                if marker not in summary:
-                    failures.append(f"standard path: summary missing {marker}")
-        except OSError as exc:
-            failures.append(f"standard path: missing guided output: {exc}")
+            failures.append(f"standard path: invalid worksheet: {exc}")
 
     standard_blocked = root / "standard-blocked"
     result = subprocess.run([

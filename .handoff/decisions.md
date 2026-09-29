@@ -7,7 +7,7 @@
 - 阶段 0 已验收。阶段 1 新增独立 Prescription-driven Standard Path，不覆盖 Legacy-compatible V4。
 - Standard Path 无效输入必须 Fail Closed，禁止静默回退到 Legacy Fast Path。
 - 阶段 1 不修改 GEO-BD，不进入阶段 2。
-- 用户最终交付目标是关键词和九大画像；Standard Path 主交付固定为 `keyword_matrix.xlsx`、`persona_report.md`、`keyword_matrix.json`、`persona_plan.json`。
+- 用户最终交付目标是简洁、可直接用于下一步 GEO 训练与运营的四类关键词和九大画像；Standard Path 默认只导出 `GEO训练与运营词画像.md`，标明每类词的训练用途、每个画像的运营价值及确认状态，结构化产物在运行时校验。
 - 内容、信源、发布和复测保留为内部边界，不进入当前主交付。
 - 九大画像采用 Markdown 人类交付，避免运行环境中文 DOCX 字体依赖；Legacy V4 的既有 DOCX 输出保持不变。
-- Standard Path 互动顺序收敛为：初版导出 → 先确认四类关键词 → 确认用户决策画像 → 确认企业九大画像 → 选择后续技能；系统推荐词仅作参考，不自动视为已批准。
+- Standard Path 直接导出一份训练运营建议稿；未确认词与缺失事实保留状态，不要求逐词填写选择表，也不把建议词冒充已批准词。

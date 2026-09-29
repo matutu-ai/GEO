@@ -309,6 +309,7 @@ class StandardPathPipeline:
         facts = fact_packet["fact_map"]
         company = _first_text(facts["company_name"]["value"])
         business = _first_text(facts["main_businesses"]["value"])
+        positioning = _first_text(facts["positioning"]["value"]).split("，", 1)[0].strip()
         product = _first_text(facts["products"]["value"])
         supplied_intents = facts["user_intents"]["value"] if facts["user_intents"]["status"] == "CONFIRMED" else []
         supplied_candidates = []
@@ -347,11 +348,14 @@ class StandardPathPipeline:
         keywords = []
         keyword_map = {}
         for intent in intent_payload["intents"]:
+            scenario = intent["scenario"]
+            target_user = intent["target_user"]
             candidates = [
                 {"keyword": company, "keyword_type": "品牌词", "_origin": "SYSTEM_RECOMMENDED"},
-                {"keyword": f"{company} {business}", "keyword_type": "搜索词", "_origin": "SYSTEM_RECOMMENDED"},
-                {"keyword": f"{business}如何选择", "keyword_type": "问答词", "_origin": "SYSTEM_RECOMMENDED"},
-                {"keyword": f"{intent['scenario']} {business}", "keyword_type": "意图场景词", "_origin": "SYSTEM_RECOMMENDED"},
+                {"keyword": f"{company}｜{business}｜{positioning}", "keyword_type": "品牌词", "_origin": "SYSTEM_RECOMMENDED"},
+                {"keyword": f"在{scenario}时，选择{business}（{positioning}）", "keyword_type": "搜索词", "_origin": "SYSTEM_RECOMMENDED"},
+                {"keyword": f"{target_user}考察{business}时，应该比较哪些条件再做选择？", "keyword_type": "问答词", "_origin": "SYSTEM_RECOMMENDED"},
+                {"keyword": f"需要一个用于{scenario}的{business}", "keyword_type": "意图场景词", "_origin": "SYSTEM_RECOMMENDED"},
             ]
             candidates.extend(supplied_candidates)
             fact_ids = sorted(set(intent["fact_ids"] + [facts["company_name"]["fact_id"], facts["main_businesses"]["fact_id"]]))

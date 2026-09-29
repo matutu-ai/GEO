@@ -1,9 +1,8 @@
-# GEO V4 快速路由
+# GEO 快速路由
 
-适用于豆包、千问、DeepSeek、Codex 等平台。此文件不能覆盖 `SKILL.md`、程序协议、Schema 或 Validator。
+先读 `INDEX.md` 选择路径，再只读该路径需要的入口文件。此文件不能覆盖 `SKILL.md`、程序协议、Schema 或 Validator。
 
-1. 只有企业名称、资料不完整，或没有明确要求一次完成：进入 `Interactive Mode`。只创建 Fact_Packet，输出唯一下一步资料收集动作。
-2. 用户明确要求一次完成，且已提供企业名称、企业定位、主营业务、目标客户和产品资料：进入 `Fast Path`，固定执行八阶段 Pipeline。
-3. 不得自行选择、跳过、重排、添加任何阶段；不得读取 `workflows/legacy/` 或 `prompts/legacy/`。
-4. 未知、推断与冲突必须保留状态；关键词必须有 `fact_ids`、用户场景、搜索意图和固定画像绑定。
-5. 最终文件只能由程序 `main.py` 和 `core/output_renderer.py` 生成。任何校验错误均停止导出。
+1. 有 GEO-BD Handoff 或人工处方，且企业关键事实已确认：使用 `standard`，读取 `workflows/standard_path.md`，导出一份 GEO 训练与运营词画像。
+2. 只需资料收集或运行旧版 V4：按 `README.md` 选择 `interactive` 或 `fast_path`，读取 `workflows/fixed_pipeline.md`。
+3. 不得自行跳过、重排阶段；未知、推断和冲突必须保留状态，校验失败即停止导出。
+4. Standard Path 最终文件由 `core/standard_renderer.py` 生成；Legacy V4 由 `core/output_renderer.py` 生成。两条路径隔离，不回退。

@@ -9,7 +9,7 @@ metadata:
 
 ## 1. Skill 身份与系统边界
 
-GEO-BD 是企业 GEO 诊断与处方系统，负责“事实 → 证据 → 指标 → 判断 → 根因 → 处方”。GEO 是企业 GEO 优化执行系统，负责“处方 → 执行策略 → 关键词 → 九大画像 → 内容 → 信源 / 渠道 → 发布执行 → 复测计划”。
+GEO-BD 是企业 GEO 诊断与处方系统，负责“事实 → 证据 → 指标 → 判断 → 根因 → 处方”。GEO 当前主线负责“处方与已确认事实 → 执行策略 → 四类关键词与九大画像 → GEO训练运营建议”；内容生产、发布和复测不属于当前主交付。
 
 GEO-BD 决定：
 “为什么要优化、优先优化什么”
@@ -29,7 +29,7 @@ GEO 决定：
 
 任何模型、智能体、平台或用户都不能改变阶段顺序、删除必需阶段、增加未授权阶段、重新生成事实、覆盖上游结果、将未知写成已知、将推断写成事实，或生成未经证实的案例、客户、评价、资质、数据和能力。校验失败时必须停止最终导出。
 
-Standard Path 的用户决策画像、阶段提示和下一步技能建议必须作为独立导出，不能与企业九大画像混为同一对象。对外主交付固定为三份：简约版词与画像、完整版词与画像、垂直业务画像。默认采用快速交互：先给核心结果，再提出一个确认问题；详细追溯放入 audit，不增加不必要的客户填写步骤。
+Standard Path 的用户决策画像、阶段提示和下一步技能建议在结构化产物中保持独立，不能与企业九大画像混为同一对象。对外只导出一份《GEO训练与运营词画像》，说明四类关键词的训练用途、固定九大画像的运营价值、已有资料和待确认项，并给出一条下一步运营方向。默认直接交付建议稿，不用逐词选择表阻塞结果；结构化产物在运行时校验，不另行导出审计目录。
 
 ## 3. Legacy-compatible V4 执行顺序
 
@@ -70,15 +70,16 @@ Agent 不得读取原始自由文本、调用其他 Agent、加载 legacy 工作
 
 Manual Prescription 使用与 GEO-BD Handoff 相同的 Prescription 对象结构，`source_system` 必须为 `MANUAL`，且不能跳过 Strategy 层。对应合同为 `schemas/geo-bd-handoff-v1.schema.json`、`schemas/geo-strategy-v1.schema.json` 和 `schemas/geo-retest-request-v1.schema.json`；引用完整性由 `validators/contract_validator.py` 校验。
 
-Standard Path 通过 `python3 main.py --mode standard --handoff <handoff.json> --input <company.json> --output <dir>` 运行，固定顺序为：
+Standard Path 通过 `python3 main.py --mode standard --handoff <handoff.json> --input <company.json> --output <dir>` 运行，严格按 `core/standard_pipeline.py` 的 12 个固定阶段执行：
 
 ```text
 handoff_validation → fact_normalization → prescription_intake
 → strategy_generation → company_context → product_context
-→ intent_strategy → keyword_strategy → persona_strategy → execution_projection
+→ intent_strategy → keyword_strategy → persona_strategy → user_persona_strategy
+→ guidance_projection → execution_projection
 ```
 
-Standard Path 内部生成 Strategy、Intent 和追溯数据，主交付为四类关键词、用户决策画像和企业九大画像的 JSON、Excel 和 Markdown，并生成 `guided_next_steps.md`。内容、信源、发布和复测不进入当前主交付。无效输入 Fail Closed，禁止静默回退到 Legacy。
+Standard Path 内部生成 Strategy、Intent 和追溯数据，主交付为单份 `GEO训练与运营词画像.md`。结构化关键词、用户决策画像、企业九大画像和下一步提示在内存中校验，默认不另行导出 JSON、Excel 或审计目录。内容、信源、发布和复测不进入当前主交付。无效输入 Fail Closed，禁止静默回退到 Legacy。
 
 以下是当前 Legacy-compatible V4 的输入输出：所有输入先进入 `Fact_Packet`。下游只能读取通过校验的 Artifact，所有事实声明必须引用 `fact_id`。最终导出固定为：
 
