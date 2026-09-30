@@ -1,8 +1,8 @@
 # Handoff
 
-- Completed work: Standard Path 已调整为一份《GEO训练与运营词画像》：四类词按场景/业务/定位等规则生成并说明训练用途，固定九大画像说明运营价值；已清理旧分步提示和生成型冗余输出，并统一入口说明。
-- Changed files: 路由/入口说明、`core/standard_pipeline.py`、`core/standard_renderer.py`、`prompts/standard/`、测试文件、旧版案例导出清理、新版单文件案例、`.handoff/`。
-- Verification results: `python3 -m unittest tests.test_standard_path` 通过（22 项）；`python3 tests/run_tests.py` 通过（Standard Path、Legacy V4、25 项协议、阶段 0/1 共 40 项检查）；讯灵 AI 案例只生成 `GEO训练与运营词画像.md`；`git diff --check` 通过；未发现对已删除提示文件的悬空引用。
-- Blockers: 正式对外版仍受主体关系、招商政策、授权案例、客户评价、资质编号和费用资料限制。
-- Pending verification: 讯灵 AI 部分词、主体关系与画像资料在作为对外事实使用前仍需企业确认。
-- Exact next action: 无；本次修改与清理已推送至 `origin/main`，提交 `7d3e820`。
+- Completed work: Standard 用户流程已收敛为一次资料收集、自动处理、仅必要时集中追问一次；指导产物只给一条下一步动作和一个相关技能建议。统一四类关键词、九大画像、简约/完整版/垂直完整版规则，并澄清 CLI 精简输出与 Skill 长版生成的边界。
+- Changed files: `SKILL.md`、入口/路由/README/架构文档、Standard 与 Legacy 交互边界提示、关键词/画像规则与模板、`core/standard_pipeline.py`、`core/standard_renderer.py`、测试、删除未引用的旧 `geo-rules.md` / `quality-rules.md` / `profile-examples.md`。
+- Verification results: `python3 -m unittest tests.test_standard_path tests.test_prompt_contract` 通过（26 项）；`python3 tests/run_tests.py` 通过（Standard Path、Legacy V4、协议与阶段检查）；讯灵 AI 案例仅生成 `GEO训练与运营词画像.md`；`git diff --check` 通过。推送待完成。
+- Blockers: TypeSafe Jev 多次返回 ByteString 编码错误，本轮未获得模型判断；按用户规则、源码、Schema 和本地测试完成。
+- Pending verification: 讯灵 AI 部分主体关系、招商政策、案例与资质继续按现有证据状态标待确认；不阻塞结构交付。
+- Exact next action: 提交本次限定变更并推送 `origin/main`，核对远端 SHA 和干净工作区。

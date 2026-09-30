@@ -157,7 +157,7 @@ with tempfile.TemporaryDirectory() as temporary:
 protocol_result = subprocess.run([
     sys.executable, "-m", "unittest",
     "tests/test_protocol_compliance.py", "tests/test_contract_boundaries.py",
-    "tests/test_standard_path.py",
+    "tests/test_standard_path.py", "tests/test_prompt_contract.py",
 ], cwd=ROOT, text=True, capture_output=True)
 if protocol_result.returncode:
     failures.append(f"protocol compliance failed: {protocol_result.stdout}{protocol_result.stderr}")

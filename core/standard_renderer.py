@@ -117,7 +117,7 @@ def render_standard(output_dir, artifacts):
         "",
         "## 下一步 GEO 运营",
         "",
-        "按四类词组织问答与场景语料；优先补齐标记为待确认或待补的内容，再进入内容训练与运营。",
+        _cell(guidance["next_prompt"]),
     ])
     output_dir.mkdir(parents=True, exist_ok=True)
     (output_dir / STANDARD_OUTPUTS[0]).write_text("\n".join(lines) + "\n", encoding="utf-8")

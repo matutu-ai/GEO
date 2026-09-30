@@ -195,7 +195,7 @@ class StandardPathPipeline:
             raw = {}
         if not isinstance(raw, dict):
             raise StandardPathBlocked("STANDARD-010: geo_preferences must be an object")
-        delivery_mode = raw.get("delivery_mode", "完整版")
+        delivery_mode = raw.get("delivery_mode", "简约版")
         if delivery_mode not in ("简约版", "完整版"):
             raise StandardPathBlocked("STANDARD-011: delivery_mode must be 简约版 or 完整版")
         list_fields = ("requested_keywords", "excluded_keywords", "approved_keywords", "user_personas")
@@ -564,77 +564,26 @@ class StandardPathPipeline:
 
     def _guidance_projection(self, intake, strategy_payload, fact_packet, keyword_payload, persona_payload, user_persona_payload):
         preferences = self._preferences
-        custom_personas = bool(preferences["user_personas"])
-        keyword_review_complete = bool(preferences["approved_keywords"])
         stages = [
             {
-                "stage_id": "delivery_selection",
-                "name": "选择交付版本与业务目标",
-                "status": "COMPLETE" if preferences["provided"] else "READY_FOR_REVIEW",
-                "prompt": "请选择简约版或完整版，并说明本次优先目标：品牌识别、业务获客、招商代理、用户教育或转化。",
-                "recommendation": "没有明确目标时，先使用完整版，但暂停正式导出，等待客户确认主业务线。",
-                "requires_user_confirmation": not preferences["provided"],
-            },
-            {
-                "stage_id": "evidence_confirmation",
-                "name": "确认资料与证据边界",
-                "status": "READY_FOR_REVIEW",
-                "prompt": "请确认企业主体、品牌名称、产品/服务、目标客户、业务边界，以及哪些资料可以公开引用。",
-                "recommendation": "主体关系、费用、案例、评价、资质和效果数字没有证据时保持待确认。",
-                "requires_user_confirmation": True,
-            },
-            {
-                "stage_id": "user_persona_confirmation",
-                "name": "确认用户决策画像",
-                "status": "COMPLETE" if custom_personas else "NEEDS_CONFIRMATION",
-                "prompt": "请确认 3—5 类重点用户：身份、场景、痛点、决策标准、阶段和典型问题。",
-                "recommendation": "如果用户画像尚未确认，下一步优先完成用户画像，不建议先扩写企业九大画像。",
-                "requires_user_confirmation": not custom_personas,
-            },
-            {
-                "stage_id": "keyword_review",
-                "name": "确认关键词分层",
-                "status": "COMPLETE" if keyword_review_complete else "READY_FOR_REVIEW",
-                "prompt": "请按品牌词、搜索词、问答词、意图场景词分别标记保留、修改、删除或待确认，并决定系统推荐词是否加入正式词库。",
-                "recommendation": "先完成四类关键词确认；系统推荐词仅作参考，不自动视为已批准。",
-                "requires_user_confirmation": not keyword_review_complete,
-            },
-            {
-                "stage_id": "enterprise_persona_review",
-                "name": "确认企业九大画像",
-                "status": "READY_FOR_REVIEW",
-                "prompt": "请逐项确认九大画像中哪些可以对外表达，哪些需要补资料，哪些本次不做。",
-                "recommendation": "用户决策画像确认后，再补企业九大画像；客户案例、评价、社会贡献和创始人介绍不得凭空补齐。",
-                "requires_user_confirmation": True,
-            },
-            {
-                "stage_id": "next_skill_decision",
-                "name": "选择后续技能",
+                "stage_id": "delivery_complete",
+                "name": "词与画像交付",
                 "status": "COMPLETE",
-                "prompt": "关键词和画像确认后，是否继续生成 AI 推广总结，或暂时只保留当前词与画像交付？",
-                "recommendation": "先确认词和画像，再考虑 AI 推广总结；不要跳过证据确认直接进入内容发布或平台验证。",
-                "requires_user_confirmation": True,
+                "prompt": "交付已生成；如需调整，请直接指出对应关键词或画像。",
+                "recommendation": "无需逐词或逐画像确认；只对用户明确要求的内容继续处理。",
+                "requires_user_confirmation": False,
             },
         ]
-        if not custom_personas:
-            next_stage = "user_persona_confirmation"
-            next_prompt = stages[2]["prompt"]
-        elif not keyword_review_complete:
-            next_stage = "keyword_review"
-            next_prompt = stages[3]["prompt"]
-        else:
-            next_stage = "enterprise_persona_review"
-            next_prompt = stages[4]["prompt"]
         payload = {
             "guidance_version": "1.0.0",
             "diagnostic_id": intake["diagnostic_id"],
             "company_id": intake["company_id"],
             "delivery_mode": preferences["delivery_mode"],
             "vertical_business": preferences["vertical_business"] or _first_text(fact_packet["fact_map"]["main_businesses"]["value"]),
-            "current_stage": "standard_export_review",
-            "recommended_next_stage": next_stage,
-            "next_prompt": next_prompt,
-            "decision_required": True,
+            "current_stage": "delivery_complete",
+            "recommended_next_stage": "geo_training_operations",
+            "next_prompt": "建议下一步：按四类词开展问答与场景语料训练，并优先补齐标记为待补的业务事实；需要推广总结时再调用 AI 推广总结技能。",
+            "decision_required": False,
             "keyword_review": {
                 "client_requested": [
                     item if isinstance(item, str) else item.get("keyword", "")
@@ -652,38 +601,18 @@ class StandardPathPipeline:
             "optimization_directions": [
                 {
                     "priority": "P0",
-                    "title": "确认用户决策画像与关键词分层",
-                    "reason": "画像决定关键词面向谁，关键词分层决定哪些词可以进入正式交付。",
-                    "next_action": "先确认四类关键词的保留、修改、删除和待确认状态，再进入用户画像与企业九大画像确认。",
-                    "status": "NEEDS_CONFIRMATION" if not custom_personas or not keyword_review_complete else "READY",
-                },
-                {
-                    "priority": "P1",
-                    "title": "补齐企业九大画像证据",
-                    "reason": "品牌故事、信任背书、案例、评价和创始人介绍需要可核验资料。",
-                    "next_action": "只补客户允许公开且有来源的材料，缺失部分保持待补。",
-                    "status": "NEEDS_CONFIRMATION",
-                },
-                {
-                    "priority": "P2",
-                    "title": "内容、信源、发布与复测",
-                    "reason": "这些属于后续执行阶段，不应在词和画像尚未确认时提前展开。",
-                    "next_action": "词和画像确认后，再由用户单独授权进入后续阶段。",
-                    "status": "NOT_IN_SCOPE",
-                },
+                    "title": "开展 GEO 训练与运营",
+                    "reason": "四类关键词已对应训练用途，九大画像可作为业务事实和内容覆盖基础。",
+                    "next_action": "按四类词组织问答与场景语料；缺失事实保持待补。",
+                    "status": "READY",
+                }
             ],
             "skill_recommendations": [
                 {
-                    "skill": "geo-keyword-persona",
-                    "when": "用户决策画像或关键词仍需确认时",
-                    "reason": "继续细化画像、认知/考虑/决策阶段和自然语言问题词。",
-                    "next_decision": "确认哪些画像与词进入正式交付。",
-                },
-                {
                     "skill": "ai-promotion-summary",
-                    "when": "关键词和画像已确认，准备形成品牌词、业务词和推广方向时",
-                    "reason": "把已确认的词和画像转成 AI 推广总结与可执行建议。",
-                    "next_decision": "决定先做推广总结，还是进入内容/信源阶段。",
+                    "when": "需要把词与画像转成推广方案时",
+                    "reason": "基于已确认业务信息形成简明推广方向。",
+                    "next_decision": "是否需要生成 AI 推广总结。",
                 },
             ],
         }

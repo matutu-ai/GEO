@@ -56,6 +56,14 @@ class StandardPathTests(unittest.TestCase):
         artifacts, trace = run_pipeline()
         self.assertEqual(artifacts["execution"]["source_system"], "GEO-BD")
         self.assertEqual(trace["pipeline_id"], "geo-standard-path-v1")
+        guidance = artifacts["guided_next_steps"]
+        self.assertEqual(guidance["delivery_mode"], "简约版")
+        self.assertFalse(guidance["decision_required"])
+        self.assertEqual(guidance["recommended_next_stage"], "geo_training_operations")
+        self.assertEqual(len(guidance["stages"]), 1)
+        self.assertFalse(guidance["stages"][0]["requires_user_confirmation"])
+        self.assertEqual(len(guidance["skill_recommendations"]), 1)
+        self.assertEqual(len(guidance["optimization_directions"]), 1)
 
     def test_02_standard_reads_manual_prescription(self):
         artifacts, _ = run_pipeline("manual-prescription-v1.json")
@@ -234,11 +242,12 @@ class StandardPathTests(unittest.TestCase):
         requested = [item for item in artifacts["keyword_matrix"]["keywords"] if item["keyword"] == "测试企业代理加盟"]
         self.assertTrue(requested)
         self.assertEqual(requested[0]["keyword_origin"], "CLIENT_REQUESTED")
-        self.assertEqual(artifacts["guided_next_steps"]["recommended_next_stage"], "keyword_review")
+        self.assertEqual(artifacts["guided_next_steps"]["recommended_next_stage"], "geo_training_operations")
+        self.assertFalse(artifacts["guided_next_steps"]["decision_required"])
 
         company["geo_preferences"]["approved_keywords"] = ["测试企业代理加盟"]
         approved_artifacts, _ = StandardPathPipeline().run(handoff, company)
-        self.assertEqual(approved_artifacts["guided_next_steps"]["recommended_next_stage"], "enterprise_persona_review")
+        self.assertEqual(approved_artifacts["guided_next_steps"]["recommended_next_stage"], "geo_training_operations")
         approved = [item for item in approved_artifacts["keyword_matrix"]["keywords"] if item["keyword"] == "测试企业代理加盟"]
         self.assertEqual(approved[0]["decision_status"], "CONFIRMED")
 

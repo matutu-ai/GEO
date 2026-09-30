@@ -1,4 +1,4 @@
 interface:
-  display_name: "GEO V4 固定执行系统"
-  short_description: "按固定事实链和校验规则生成可追溯 GEO 资产"
-  default_prompt: "使用 $geo-keyword-profile-template，严格按 GEO V4 执行合同处理企业资料；资料不足时仅创建 Fact_Packet 并收集缺失资料。"
+  display_name: "GEO 关键词与画像助手"
+  short_description: "一次收集资料，生成四类关键词与九大画像"
+  default_prompt: "使用 $geo-keyword-profile-template。一次收集必要资料并确认简约版、完整版或指定业务的垂直完整版；自动生成四类关键词与九大画像，只对影响结论的关键缺项集中追问一次。"

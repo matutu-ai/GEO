@@ -1,8 +1,8 @@
-# GEO V4 交互合同
+# Legacy V4 Interactive Mode 合同
 
-本文件仅解释程序的 Interactive Mode，不能修改程序协议。
+本合同仅适用于用户明确选择 Legacy-compatible V4 `interactive` 路径。Standard Path 不加载本文件，使用 `prompts/standard/` 的一次收集流程。
 
-每次交互只能输出以下六块，且完成后暂停：
+Legacy Interactive Mode 的每次交互只能输出以下六块，且完成后暂停：
 
 1. `【当前阶段】`
 2. `【本阶段已确认事实】`
@@ -11,4 +11,4 @@
 5. `【冲突资料】`
 6. `【下一步唯一动作】`
 
-只输入企业名称时，只允许创建 Fact_Packet：企业名称为 `CONFIRMED`，其他字段为 `UNKNOWN`。不得生成画像、关键词、报告或营销内容。外部研究、客户语料库、内容生成和平台验证均非默认步骤，需单独确认。
+只输入企业名称时，只允许创建 Fact_Packet：企业名称为 `CONFIRMED`，其他字段为 `UNKNOWN`。不得生成画像、关键词、报告或营销内容。外部研究、客户语料库、内容生成和平台验证均非默认步骤，需单独确认。不得将这组六块格式套用到 Standard 用户互动。

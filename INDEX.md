@@ -1,4 +1,4 @@
-# GEO 关键词与九大画像执行索引
+# GEO 当前规则索引
 
 GEO-BD 决定：
 “为什么要优化、优先优化什么”
@@ -16,12 +16,14 @@ GEO 决定：
 | 校验 Contract | `validators/contract_validator.py` | Schema 校验、Prescription ID 唯一、引用存在 |
 | Prescription-driven Standard Path | `python3 main.py --mode standard --handoff <handoff.json> --input <company.json> --output <dir>` | Handoff → Facts → Strategy → Intent → Keyword → Persona → Execution |
 | Standard Path 运行顺序 | `workflows/standard_path.md`、`core/standard_pipeline.py` | 12 个固定阶段，不回退 Legacy |
-| Standard Path 输出 | `GEO训练与运营词画像.md` | 四类词及训练用途、九大画像及运营价值、下一步方向 |
-| 资料不足或只给企业名称 | `python3 main.py --mode interactive` | Legacy-compatible V4：Fact Packet 后暂停 |
-| 资料完整且明确一次完成 | `python3 main.py --mode fast_path --input <company.json>` | Legacy-compatible V4：现有 10 份输出 |
+| 用户交互唯一入口 | `prompts/standard/00_quick_start.md` | 一次收集资料与版本；必要时只集中追问一次 |
+| 四类关键词规则 | `references/keyword-rules.md` | 品牌词、搜索词、问答词、意图场景词 |
+| 九大画像与长短版 | `references/template-guide.md` | 简约版、完整版、垂直完整版；九项固定 |
+| Standard Path 输出 | `GEO训练与运营词画像.md` | 一份文件：四类词、九大画像、下一步建议 |
+| Legacy V4 旧模式 | 用户明确指定时使用 `interactive` / `fast_path` | 旧版兼容运行，不作为默认用户引导 |
 | 检查旧 V4 协议和权限 | `core/execution_protocol.py`、`core/agent_contracts.py` | 固定顺序、字段级权限、Fail Closed |
-| 了解历史资料 | `workflows/legacy/`、`prompts/legacy/` | 仅 Legacy-compatible V4 路径按需使用，不加载到 Standard Path |
+| 旧版兼容资料 | `workflows/legacy/`、`prompts/legacy/` | 仅按需兼容旧路径；禁止与 Standard 混用 |
 
-使用原则：先按任务选择一条路径，再只读该路径入口及直接相关的 1—2 份文档；不要批量读取 Legacy、模板和输出样例。
+使用原则：默认只读 `SKILL.md`、Standard 快速启动及当前任务直接相关的一份规则；不要批量读取 Legacy、所有模板或历史案例。
 
 Legacy-compatible V4 仍不读取 Prescription Handoff；只有 `standard` 模式是关键词与九大画像主路径。两条路径逻辑隔离，Standard 输入无效时不得回退到 Legacy。

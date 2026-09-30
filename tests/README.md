@@ -2,7 +2,7 @@
 
 ## 覆盖范围
 
-- 默认 Interactive Mode 只创建 Fact_Packet 并暂停。
+- Legacy-compatible V4 的 Interactive Mode 只创建 Fact_Packet 并暂停；Standard 默认不进入这套逐阶段交互。
 - 完整 Fast Path 按八个固定阶段运行并导出 10 份工件。
 - Pipeline 策略禁用 dynamic routing、Agent override 和 legacy 流程。
 - JSON Schema 文件可解析，输出结构、固定四类词和九大画像可验证。
@@ -11,6 +11,7 @@
 - 当前固定八阶段仅作为 `Legacy-compatible V4 execution path` 回归验证，不代表已完成 Prescription-driven Pipeline。
 - 20 项阶段 1 测试覆盖 Standard Path、Prescription 只读、Strategy / Intent / Keyword / Persona 追溯、关键词 Excel、九大画像 Markdown 和禁止回退 Legacy。
 - Standard Path 与 Legacy-compatible V4 分别运行；标准输入无效时直接 Fail Closed。
+- Standard prompt contract 检查三种画像交付、四类关键词、单次集中追问与 Legacy 隔离。
 
 ## 运行
 
