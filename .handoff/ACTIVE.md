@@ -1,8 +1,7 @@
 # Active Task
 
-- Current task: 按最新用户规则统一 GEO Skill、Standard 互动、四类词和九大画像，清除不再使用的参考内容并同步 GitHub。
-- Objective: 一次收集资料、自动生成；仅关键事实缺失/冲突时集中追问一次；输出简约版、完整版或垂直完整版之一，并只给一条下一步建议。
-- Current progress: 文档、Standard guidance projection 和 renderer 已更新；过时未引用的通用 GEO/评分规则、虚构画像案例及旧发布数量段已清理；讯灵案例临时导出和本地测试通过；远端 `main` 已同步到 `051edc3827e9bcd24bb5439263171dc26e88fb36`。
-- Pending work: 无。
-- Confirmed boundary: Legacy-compatible V4 代码与隔离资料保留；Standard CLI 仍只渲染精简画像表，长版由 Skill 按已确认资料生成，不声称 CLI 支持长文。
-- Exact next action: 等待下一项任务。
+- Current task: 将已确认的短词根规则同步到 `matutu-ai/GEO`。
+- Objective: Standard 单份报告为搜索词、问答词、意图场景词展示短词根和完整问法；保留现有结构化合同与 Legacy 路径。
+- Current progress: 本地提交 `055884a` 已实现并通过完整测试，讯灵案例导出成功；远端 `origin/main` 仍为 `75bb2db`。
+- Current blocker: GitHub HTTPS 凭据无效；`gh auth status` 报默认账号令牌失效，GitHub 连接器与浏览器均未登录；`git push origin main` 失败。
+- Exact next action: 用户在本机重新完成 GitHub 登录后，核对远端分支并推送本地 `main`；当前无远端同步完成证据。
