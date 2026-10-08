@@ -37,6 +37,26 @@ def _cell(value):
     return str(value).replace("|", "\\|").replace("\n", " ")
 
 
+def _short_root(value):
+    text = str(value).strip()
+    return text if 2 <= len(text) <= 10 else "—"
+
+
+def _keyword_root(item, business):
+    if item.get("keyword_origin") == "CLIENT_REQUESTED":
+        for value in (item["keyword"], item["user_scenario"], item["search_intent"]):
+            root = _short_root(value)
+            if root != "—":
+                return root
+        return "—"
+    if item["keyword_type"] == "搜索词":
+        return _short_root(business)
+    if item["keyword_type"] == "问答词":
+        combined = _short_root(f"{business}怎么选")
+        return combined if combined != "—" else "怎么选"
+    return _short_root(item["user_scenario"])
+
+
 def _keyword_status(item):
     if item.get("decision_status") == "CONFIRMED":
         return "已确认"
@@ -73,6 +93,8 @@ def render_standard(output_dir, artifacts):
     values = artifacts["company_context"]["values"]
     guidance = artifacts["guided_next_steps"]
     company = _text(values.get("company_name", artifacts["persona_plan"]["company_id"]))
+    business_value = values.get("main_businesses", "")
+    business = _text(business_value[0] if isinstance(business_value, list) and business_value else business_value)
     excluded = set(guidance["keyword_review"]["excluded"])
     keywords = [item for item in artifacts["keyword_matrix"]["keywords"] if item["keyword"] not in excluded]
     personas = artifacts["persona_plan"]["personas"]
@@ -88,17 +110,19 @@ def render_standard(output_dir, artifacts):
         "",
     ]
     for kind, purpose in KEYWORD_PURPOSES.items():
-        lines.extend([
-            f"### {kind}｜{purpose}",
-            "",
-            "| 关键词 | 状态 |",
-            "| --- | --- |",
-        ])
+        lines.extend([f"### {kind}｜{purpose}", ""])
+        if kind == "品牌词":
+            lines.extend(["| 关键词 | 状态 |", "| --- | --- |"])
+        else:
+            lines.extend(["| 短词根 | 用户问法／推荐词 | 状态 |", "| --- | --- | --- |"])
         candidates = [item for item in keywords if item["keyword_type"] == kind]
         for item in candidates:
-            lines.append(f"| {_cell(item['keyword'])} | {_keyword_status(item)} |")
+            if kind == "品牌词":
+                lines.append(f"| {_cell(item['keyword'])} | {_keyword_status(item)} |")
+            else:
+                lines.append(f"| {_cell(_keyword_root(item, business))} | {_cell(item['keyword'])} | {_keyword_status(item)} |")
         if not candidates:
-            lines.append("| 待补充 | 待确认 |")
+            lines.append("| 待补充 | 待确认 |" if kind == "品牌词" else "| — | 待补充 | 待确认 |")
         lines.append("")
 
     lines.extend([

@@ -206,6 +206,25 @@ class StandardPathTests(unittest.TestCase):
             self.assertIn("在车间设备改造时，选择工业设备服务（工业设备服务商）", generated)
             self.assertIn("工业企业考察工业设备服务时，应该比较哪些条件再做选择？", generated)
             self.assertIn("需要一个用于车间设备改造的工业设备服务", generated)
+            content = (output / "GEO训练与运营词画像.md").read_text(encoding="utf-8")
+            self.assertIn("| 短词根 | 用户问法／推荐词 | 状态 |", content)
+            self.assertIn("| 工业设备服务怎么选 | 工业企业考察工业设备服务时", content)
+            self.assertIn("| 车间设备改造 | 需要一个用于车间设备改造的工业设备服务 |", content)
+
+    def test_16a_client_long_question_uses_confirmed_intent_as_short_root(self):
+        handoff = load_json("geo-bd-handoff-v1.json")
+        company = load_json("complete-v4-company.json")
+        company["user_intents"].append({
+            "keyword": "工业设备方案的交付条件应如何核验？",
+            "keyword_type": "问答词",
+            "user_scenario": "车间设备改造前核验交付条件",
+            "search_intent": "交付核验",
+            "persona_unit": "用户痛点",
+        })
+        artifacts, _ = StandardPathPipeline().run(handoff, company)
+        from core.standard_renderer import _keyword_root
+        item = next(item for item in artifacts["keyword_matrix"]["keywords"] if item["keyword"] == "工业设备方案的交付条件应如何核验？")
+        self.assertEqual(_keyword_root(item, "工业设备服务"), "交付核验")
 
     def test_17_standard_outputs_user_personas_and_guidance(self):
         with tempfile.TemporaryDirectory() as directory:
