@@ -18,8 +18,8 @@
 - Changed: `core/keyword_terms.py`、`core/standard_pipeline.py`、`core/standard_renderer.py`、相关 Skill/README/路由/提示/参考文档、`agents/openai.yaml`、讯灵样例、测试、移除已确认过时且无引用文件。
 - Verification: `PYTHONDONTWRITEBYTECODE=1 python3 tests/run_tests.py` 通过（全库 79 项含 Legacy/契约回归）；讯灵样例成功只导出一份 Markdown，检查三类主章节；Skill `quick_validate.py` 通过；`git diff --check` 通过。
 - Decision support: TypeSafe Jev 在本任务连续返回 ByteString Unicode 错误；未取得决策结果，按附件、代码契约和测试完成。
-- GitHub: 用户已明确授权推送；本地 `main` 相比 `origin/main` 领先 2 个既有 GEO 提交，远端无额外领先提交。当前变更已通过验证，实际提交/推送结果待执行确认。
-- Exact next action: 审阅差异后提交所有与本次 GEO 主规则同步相关的已授权变更，推送 `origin/main` 并确认 `HEAD` 与 `origin/main` 一致。
+- GitHub: 用户已明确授权推送；`origin/main` 无额外领先提交，本地含两个既有提交及本次提交 `57efd87`。提交成功；`git push origin main` 失败：HTTPS 凭据不可用 (`could not read Username ... Device not configured`)。GitHub Connector 也未连接。远端未更新。
+- Exact next action: 用户在本机登录 GitHub/配置凭据后运行 `git push origin main`，然后确认 `git status --short --branch` 显示与 `origin/main` 同步。
 
 ## 2026-10-14：四类关键词逻辑优化
 
