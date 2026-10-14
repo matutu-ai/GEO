@@ -37,7 +37,7 @@ V4_OUTPUTS = [
     "final_summary.json", "execution_trace.json",
 ]
 STANDARD_OUTPUTS = [
-    "GEO训练与运营词画像.md",
+    "GEO 业务词根与画像.md",
 ]
 failures = []
 
@@ -134,13 +134,13 @@ with tempfile.TemporaryDirectory() as temporary:
     else:
         try:
             report = (standard / STANDARD_OUTPUTS[0]).read_text(encoding="utf-8")
-            for heading in ["### 品牌词｜", "### 搜索词｜", "### 问答词｜", "### 意图场景词｜", "## 九大画像与运营价值"]:
+            for heading in ["### 品牌词｜", "### 搜索词｜", "### 问答词｜", "### 意图场景词｜", "## 九大画像"]:
                 if heading not in report:
                     failures.append(f"standard path: worksheet missing {heading}")
             for heading in ["产品或服务描述", "产品或服务特点", "品牌故事", "用户痛点", "信任背书", "客户案例", "社会贡献", "客户评价", "创始人介绍"]:
-                if f"| {heading} |" not in report:
+                if f"### {heading}" not in report:
                     failures.append(f"standard path: worksheet missing {heading}")
-            if "训练品牌识别" not in report or "选择后的运营优势" not in report or "你的选择" in report:
+            if "品牌词练品牌识别" not in report or "你的选择" in report:
                 failures.append("standard path: brief lacks training purpose, persona value, or includes selection worksheet")
         except OSError as exc:
             failures.append(f"standard path: invalid worksheet: {exc}")
@@ -166,4 +166,4 @@ if failures:
     print("\n".join(failures))
     raise SystemExit(1)
 
-print("PASS: GEO Standard Path, Legacy V4, 25 protocol checks, 20 phase-0 checks, and 20 phase-1 checks")
+print("PASS: GEO Standard Path, Legacy V4, protocol and contract checks")

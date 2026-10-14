@@ -68,9 +68,9 @@
     "reviews": []
   },
   "geo_preferences": {
-    "delivery_mode": "完整版",
+    "output_mode": "完整模式",
     "primary_objective": "招商加盟与区域代理获客",
-    "vertical_business": "讯灵AI招商加盟/区域代理/渠道合作",
+    "vertical_business": "",
     "requested_keywords": [
       {"keyword": "讯灵AI代理加盟", "keyword_type": "品牌词"},
       {"keyword": "讯灵AI区域代理", "keyword_type": "搜索词"},

@@ -18,8 +18,8 @@ GEO 决定：
 | Standard Path 运行顺序 | `workflows/standard_path.md`、`core/standard_pipeline.py` | 12 个固定阶段，不回退 Legacy |
 | 用户交互唯一入口 | `prompts/standard/00_quick_start.md` | 一次收集资料与版本；必要时只集中追问一次 |
 | 四类关键词规则 | `references/keyword-rules.md` | 品牌词、搜索词、问答词、意图场景词 |
-| 九大画像与长短版 | `references/template-guide.md` | 简约版、完整版、垂直完整版；九项固定 |
-| Standard Path 输出 | `GEO训练与运营词画像.md` | 一份文件：四类词、九大画像、下一步建议 |
+| 九大画像与输出模式 | `references/template-guide.md` | 完整模式、仅词模式、仅画像模式；九项固定 |
+| Standard Path 输出 | `GEO 业务词根与画像.md` | 一份文件：六类词根、四类词、核心词根画像卡、九大画像、下一步建议 |
 | Legacy V4 旧模式 | 用户明确指定时使用 `interactive` / `fast_path` | 旧版兼容运行，不作为默认用户引导 |
 | 检查旧 V4 协议和权限 | `core/execution_protocol.py`、`core/agent_contracts.py` | 固定顺序、字段级权限、Fail Closed |
 | 旧版兼容资料 | `workflows/legacy/`、`prompts/legacy/` | 仅按需兼容旧路径；禁止与 Standard 混用 |

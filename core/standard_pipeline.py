@@ -3,6 +3,8 @@
 import json
 from copy import deepcopy
 
+from core.keyword_terms import compact_keyword_root, confirmed_region_terms, without_regions
+
 from validators.contract_validator import (
     ContractValidationError,
     validate_execution_projection,
@@ -40,7 +42,7 @@ FACT_FIELDS = (
     "environmental_contributions", "local_contributions", "public_welfare_actions",
 )
 STANDARD_REQUIRED_FACTS = (
-    "company_name", "positioning", "main_businesses", "target_customers", "products",
+    "company_name", "main_businesses", "products", "positioning", "target_customers", "use_cases",
 )
 KEYWORD_TYPES = ("品牌词", "搜索词", "问答词", "意图场景词")
 KEYWORD_INTENTS = {
@@ -82,6 +84,32 @@ def _summarize(value):
     return str(value)
 
 
+def _shared_brand_name(company, businesses):
+    if not isinstance(businesses, list) or len(businesses) < 2:
+        return company
+    common = str(businesses[0])
+    for business in businesses[1:]:
+        while common and not str(business).startswith(common):
+            common = common[:-1]
+    return common if 2 <= len(common) <= 10 else company
+
+
+def _positioning_cue(value):
+    first_clause = _first_text(value).split("，", 1)[0].strip()
+    first_part = first_clause.split("与", 1)[0].strip()
+    return first_part if 2 <= len(first_part) <= 10 else first_clause
+
+
+def _scenario_choice(value):
+    values = value if isinstance(value, list) else [value]
+    decision_prefixes = ("考察", "申请", "寻找", "准备", "核验", "评估", "判断", "选择", "了解", "对比")
+    for item in values:
+        text = _first_text(item).strip()
+        if text and not text.startswith(decision_prefixes):
+            return text
+    return ""
+
+
 class StandardPathPipeline:
     """Minimal phase-1 runtime: Prescription -> Strategy -> projected execution."""
 
@@ -96,6 +124,11 @@ class StandardPathPipeline:
             self._preferences = self._read_preferences(company_data)
             validated_handoff = self._validate_handoff(handoff)
             fact_packet = self._normalize_facts(company_data)
+            selected_business = self._preferences["vertical_business"]
+            main_businesses = fact_packet["fact_map"]["main_businesses"]["value"]
+            confirmed_businesses = main_businesses if isinstance(main_businesses, list) else [main_businesses]
+            if selected_business and selected_business not in confirmed_businesses:
+                raise StandardPathBlocked("STANDARD-013: vertical_business must match a confirmed main business")
             prescription_intake = self._intake_prescriptions(validated_handoff)
             strategy = self._generate_strategy(prescription_intake, fact_packet)
             company_context = self._company_context(fact_packet)
@@ -195,18 +228,25 @@ class StandardPathPipeline:
             raw = {}
         if not isinstance(raw, dict):
             raise StandardPathBlocked("STANDARD-010: geo_preferences must be an object")
-        delivery_mode = raw.get("delivery_mode", "简约版")
+        delivery_mode = raw.get("delivery_mode", "完整版")
         if delivery_mode not in ("简约版", "完整版"):
             raise StandardPathBlocked("STANDARD-011: delivery_mode must be 简约版 or 完整版")
+        output_mode = raw.get("output_mode", "完整模式")
+        if output_mode not in ("完整模式", "仅词模式", "仅画像模式"):
+            raise StandardPathBlocked("STANDARD-014: output_mode must be 完整模式, 仅词模式 or 仅画像模式")
+        if "include_region_in_intent" in raw and not isinstance(raw["include_region_in_intent"], bool):
+            raise StandardPathBlocked("STANDARD-017: include_region_in_intent must be a boolean")
         list_fields = ("requested_keywords", "excluded_keywords", "approved_keywords", "user_personas")
         for field in list_fields:
             if field in raw and not isinstance(raw[field], list):
                 raise StandardPathBlocked(f"STANDARD-012: geo_preferences.{field} must be an array")
         return {
             "provided": "geo_preferences" in company_data,
-            "delivery_mode": delivery_mode,
+            "delivery_mode": "完整版",
+            "output_mode": output_mode,
             "primary_objective": str(raw.get("primary_objective", "关键词与画像整理")),
             "vertical_business": str(raw.get("vertical_business", "")),
+            "include_region_in_intent": raw.get("include_region_in_intent", False) is True,
             "requested_keywords": deepcopy(raw.get("requested_keywords", [])),
             "excluded_keywords": deepcopy(raw.get("excluded_keywords", [])),
             "approved_keywords": deepcopy(raw.get("approved_keywords", [])),
@@ -263,6 +303,15 @@ class StandardPathPipeline:
         context = {
             "values": {field: deepcopy(facts[field]["value"]) for field in fields if facts[field]["status"] == "CONFIRMED"},
             "fact_ids": [facts[field]["fact_id"] for field in fields if facts[field]["status"] == "CONFIRMED"],
+            "source_facts": {
+                field: deepcopy(facts[field]) for field in (
+                    "company_name", "positioning", "main_businesses", "target_customers",
+                    "service_regions", "use_cases", "user_pain_points", "competitive_advantages", "evidence",
+                )
+            },
+            "vertical_business_requested": bool(self._preferences["vertical_business"]),
+            "output_mode": self._preferences["output_mode"],
+            "include_region_in_intent": self._preferences["include_region_in_intent"],
             "role": "EXECUTION_CONTEXT_ONLY",
         }
         self._record("company_context", "company_execution_context")
@@ -280,18 +329,26 @@ class StandardPathPipeline:
 
     def _intent_strategy(self, intake, strategy_payload, fact_packet):
         facts = fact_packet["fact_map"]
-        scenario_fact = facts["use_cases"] if facts["use_cases"]["status"] == "CONFIRMED" else facts["main_businesses"]
+        scenario_fact = (
+            facts["use_cases"] if facts["use_cases"]["status"] == "CONFIRMED"
+            else facts["main_businesses"]
+        )
         target_fact = facts["target_customers"]
         prescription_map = {item["id"]: item for item in intake["prescriptions"]}
         intents = []
         for index, strategy in enumerate(strategy_payload["strategies"], start=1):
             prescription = prescription_map[strategy["prescription_ids"][0]]
+            scenario = _scenario_choice(scenario_fact["value"])
+            if not scenario:
+                raise StandardPathBlocked(
+                    "STANDARD-018: use_cases must include a real usage scenario, not only a decision stage"
+                )
             intents.append({
                 "id": f"INTENT-{index:03d}",
                 "strategy_ids": [strategy["id"]],
                 "prescription_ids": list(strategy["prescription_ids"]),
                 "intent": f"落实处方：{prescription['statement']}",
-                "scenario": _first_text(scenario_fact["value"]),
+                "scenario": scenario,
                 "target_user": _first_text(target_fact["value"]),
                 "fact_ids": sorted({scenario_fact["fact_id"], target_fact["fact_id"]}),
             })
@@ -308,9 +365,14 @@ class StandardPathPipeline:
     def _keyword_strategy(self, intake, strategy_payload, intent_payload, fact_packet):
         facts = fact_packet["fact_map"]
         company = _first_text(facts["company_name"]["value"])
-        business = _first_text(facts["main_businesses"]["value"])
-        positioning = _first_text(facts["positioning"]["value"]).split("，", 1)[0].strip()
-        product = _first_text(facts["products"]["value"])
+        brand = _shared_brand_name(company, facts["main_businesses"]["value"])
+        business = self._preferences["vertical_business"] or _first_text(facts["main_businesses"]["value"])
+        brand_business = business if business.startswith(brand) else f"{brand}｜{business}"
+        positioning = _positioning_cue(facts["positioning"]["value"])
+        product = business if self._preferences["vertical_business"] else _first_text(facts["products"]["value"])
+        region_terms = confirmed_region_terms(
+            facts["service_regions"]["value"] if facts["service_regions"]["status"] == "CONFIRMED" else []
+        )
         supplied_intents = facts["user_intents"]["value"] if facts["user_intents"]["status"] == "CONFIRMED" else []
         supplied_candidates = []
         if isinstance(supplied_intents, list):
@@ -348,20 +410,32 @@ class StandardPathPipeline:
         keywords = []
         keyword_map = {}
         for intent in intent_payload["intents"]:
-            scenario = intent["scenario"]
-            target_user = intent["target_user"]
+            scenario = compact_keyword_root(intent["scenario"], region_terms) or without_regions(intent["scenario"], region_terms) or business
+            target_user = without_regions(intent["target_user"], region_terms)
             candidates = [
-                {"keyword": company, "keyword_type": "品牌词", "_origin": "SYSTEM_RECOMMENDED"},
-                {"keyword": f"{company}｜{business}｜{positioning}", "keyword_type": "品牌词", "_origin": "SYSTEM_RECOMMENDED"},
-                {"keyword": f"在{scenario}时，选择{business}（{positioning}）", "keyword_type": "搜索词", "_origin": "SYSTEM_RECOMMENDED"},
-                {"keyword": f"{target_user}考察{business}时，应该比较哪些条件再做选择？", "keyword_type": "问答词", "_origin": "SYSTEM_RECOMMENDED"},
-                {"keyword": f"需要一个用于{scenario}的{business}", "keyword_type": "意图场景词", "_origin": "SYSTEM_RECOMMENDED"},
+                {"keyword": brand, "keyword_type": "品牌词", "_origin": "SYSTEM_RECOMMENDED"},
+                {"keyword": brand_business, "keyword_type": "品牌词", "_origin": "SYSTEM_RECOMMENDED"},
+                {"keyword": f"{brand_business}｜{positioning}", "keyword_type": "品牌词", "_origin": "SYSTEM_RECOMMENDED"},
+                {"keyword": f"{scenario}找{business}（{positioning}）", "keyword_type": "搜索词", "_origin": "SYSTEM_RECOMMENDED"},
+                {"keyword": f"{scenario} {business} {positioning}", "keyword_type": "搜索词", "_origin": "SYSTEM_RECOMMENDED"},
+                {"keyword": f"适合{scenario}的{business}（{positioning}）", "keyword_type": "搜索词", "_origin": "SYSTEM_RECOMMENDED"},
+                {"keyword": f"{target_user}在{scenario}选择{business}时，应重点比较哪些条件？", "keyword_type": "问答词", "_origin": "SYSTEM_RECOMMENDED"},
+                {"keyword": f"{scenario}需要{business}时，怎么判断服务是否适合？", "keyword_type": "问答词", "_origin": "SYSTEM_RECOMMENDED"},
+                {"keyword": f"{business}与其他方案相比，哪些{target_user}更适合选择？", "keyword_type": "问答词", "_origin": "SYSTEM_RECOMMENDED"},
+                {"keyword": f"我需要{intent['scenario'] if self._preferences['include_region_in_intent'] else scenario}，想找{business}", "keyword_type": "意图场景词", "_origin": "SYSTEM_RECOMMENDED"},
+                {"keyword": f"{target_user}有{intent['scenario'] if self._preferences['include_region_in_intent'] else scenario}需求，需要{business}", "keyword_type": "意图场景词", "_origin": "SYSTEM_RECOMMENDED"},
+                {"keyword": f"为{intent['scenario'] if self._preferences['include_region_in_intent'] else scenario}找一家{business}", "keyword_type": "意图场景词", "_origin": "SYSTEM_RECOMMENDED"},
             ]
             candidates.extend(supplied_candidates)
-            fact_ids = sorted(set(intent["fact_ids"] + [facts["company_name"]["fact_id"], facts["main_businesses"]["fact_id"]]))
+            fact_ids = sorted(set(intent["fact_ids"] + [
+                facts["company_name"]["fact_id"], facts["main_businesses"]["fact_id"],
+                facts["positioning"]["fact_id"], facts["products"]["fact_id"],
+            ]))
             for candidate in candidates:
                 keyword = candidate["keyword"]
                 keyword_type = candidate["keyword_type"]
+                if keyword_type not in KEYWORD_TYPES:
+                    raise StandardPathBlocked(f"STANDARD-015: unsupported keyword_type: {keyword_type}")
                 intent_label, persona_unit = KEYWORD_INTENTS[keyword_type]
                 key = (keyword, keyword_type)
                 if key not in keyword_map:
@@ -400,6 +474,19 @@ class StandardPathPipeline:
                             else "PENDING_CONFIRMATION"
                         )
         keywords = list(keyword_map.values())
+        for keyword_type in KEYWORD_TYPES:
+            typed = [item for item in keywords if item["keyword_type"] == keyword_type]
+            client_terms = [item for item in typed if item["keyword_origin"] == "CLIENT_REQUESTED"]
+            if len(client_terms) > 12:
+                raise StandardPathBlocked(f"STANDARD-016: more than 12 client keywords for {keyword_type}")
+            kept = client_terms + [
+                item for item in typed if item["keyword_origin"] != "CLIENT_REQUESTED"
+            ][:12 - len(client_terms)]
+            kept_ids = {item["keyword_id"] for item in kept}
+            keywords = [
+                item for item in keywords
+                if item["keyword_type"] != keyword_type or item["keyword_id"] in kept_ids
+            ]
         payload = {
             "keyword_version": "1.0.0",
             "diagnostic_id": intake["diagnostic_id"],
@@ -486,8 +573,8 @@ class StandardPathPipeline:
             source_items = [target_value]
             status = "NEEDS_CONFIRMATION"
         scenario_value = facts["use_cases"]["value"] if facts["use_cases"]["status"] == "CONFIRMED" else facts["main_businesses"]["value"]
-        scenario = _first_text(scenario_value)
-        business = _first_text(facts["main_businesses"]["value"])
+        scenario = self._preferences["vertical_business"] or _first_text(scenario_value)
+        business = self._preferences["vertical_business"] or _first_text(facts["main_businesses"]["value"])
         pain_value = facts["user_pain_points"]["value"] if facts["user_pain_points"]["status"] == "CONFIRMED" else []
         criteria_value = facts["competitive_advantages"]["value"] if facts["competitive_advantages"]["status"] == "CONFIRMED" else []
         supplied_queries = [
@@ -582,7 +669,7 @@ class StandardPathPipeline:
             "vertical_business": preferences["vertical_business"] or _first_text(fact_packet["fact_map"]["main_businesses"]["value"]),
             "current_stage": "delivery_complete",
             "recommended_next_stage": "geo_training_operations",
-            "next_prompt": "建议下一步：按四类词开展问答与场景语料训练，并优先补齐标记为待补的业务事实；需要推广总结时再调用 AI 推广总结技能。",
+            "next_prompt": "建议下一步：先用已确认的品牌词和搜索词制作可核验的 GEO 语料；需要推广总结时可使用 AI 推广总结技能。",
             "decision_required": False,
             "keyword_review": {
                 "client_requested": [
@@ -603,7 +690,7 @@ class StandardPathPipeline:
                     "priority": "P0",
                     "title": "开展 GEO 训练与运营",
                     "reason": "四类关键词已对应训练用途，九大画像可作为业务事实和内容覆盖基础。",
-                    "next_action": "按四类词组织问答与场景语料；缺失事实保持待补。",
+                    "next_action": "先以品牌词和搜索词组织可核验语料；缺失事实保持待补。",
                     "status": "READY",
                 }
             ],
