@@ -7,7 +7,7 @@
 - Training: 新增文章训练约束，一文只绑定一个业务线、一个搜索角色、一个意向阶段、1–2 个主词和 3–5 个自然问法。
 - Skill: 仓库和本机 `geo-keyword-persona` 更新到 4.2.0，并同步默认提示。
 - Verification: `python3 tests/run_tests.py` 通过；默认 Standard 案例导出成功；两个 Skill quick validation 通过；JSON Schema 解析和 `git diff --check` 通过。
-- Git: 用户已明确授权提交并推送；待完成最终远端同步验证。
+- Git: 主功能提交 `debe3e7` 已成功推送至 `origin/main`；本地与远端将在本记录提交后再次核对。
 
 ## 2026-10-20：Standard 收口与默认路径清理
 
