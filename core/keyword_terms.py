@@ -45,10 +45,10 @@ def without_regions(value, terms):
 def compact_keyword_root(value, terms=()):
     """Extract a concise, source-derived cue without manufacturing a new claim."""
     text = without_regions(value, terms)
-    if 2 <= len(text) <= 8:
+    if 2 <= len(text) <= 10:
         return text
     parts = [part.strip(" ，、；。:：") for part in _ROOT_BREAKS.split(text)]
-    candidates = [part for part in parts if 2 <= len(part) <= 8 and part not in _GENERIC_ROOTS]
+    candidates = [part for part in parts if 2 <= len(part) <= 10 and part not in _GENERIC_ROOTS]
     if not candidates:
         return ""
     selected = max(enumerate(candidates), key=lambda pair: (len(pair[1]), pair[0]))[1]

@@ -14,7 +14,9 @@ class PromptContractTests(unittest.TestCase):
             self.assertIn(mode, prompt)
         self.assertIn("默认完整模式", prompt)
         self.assertIn("不输出画像", prompt)
-        self.assertIn("不输出词根与关键词", prompt)
+        self.assertIn("仅画像模式不输出关键词", prompt)
+        self.assertIn("默认简约版", prompt)
+        self.assertIn("每项 800–1000 字", prompt)
 
     def test_standard_flow_avoids_repeated_confirmation(self):
         prompt = (ROOT / "prompts/standard/00_quick_start.md").read_text(encoding="utf-8")
@@ -34,6 +36,16 @@ class PromptContractTests(unittest.TestCase):
         self.assertIn("问答词回答", rules)
         self.assertIn("意图场景词表达", rules)
         self.assertIn("不是搜索平台实测词", rules)
+        self.assertIn("短词根通常 3–10 个字", rules)
+        self.assertIn("高意向 60%、中意向 30%、低意向 10%", rules)
+
+    def test_complete_persona_and_article_rules_are_strict(self):
+        profile = (ROOT / "references/template-guide.md").read_text(encoding="utf-8")
+        article = (ROOT / "references/article-training.md").read_text(encoding="utf-8")
+        self.assertIn("每项 800–1000 字", profile)
+        self.assertIn("Fail Closed", profile)
+        self.assertIn("一个业务线、一个搜索角色、一个意向阶段", article)
+        self.assertIn("1–2 个主词", article)
 
     def test_legacy_prompt_is_explicitly_out_of_standard_scope(self):
         start = (ROOT / "prompts/00_start_prompt.md").read_text(encoding="utf-8")

@@ -34,7 +34,9 @@ class ExecutionProtocol:
         except (OSError, json.JSONDecodeError) as exc:
             raise ProtocolViolation(f"PROTOCOL-005: cannot load pipeline policy: {exc}") from exc
         required = {
-            "default_pipeline": "geo-v4-fixed-pipeline", "legacy_enabled": False,
+            "default_pipeline": "geo-standard-path-v1",
+            "legacy_pipeline": "geo-v4-fixed-pipeline",
+            "legacy_explicit_only": True,
             "allow_dynamic_routing": False, "allow_agent_override": False,
             "allow_unapproved_tools": False, "require_schema_validation": True,
             "require_traceability": True, "fail_closed": True,

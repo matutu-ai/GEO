@@ -37,7 +37,7 @@ V4_OUTPUTS = [
     "final_summary.json", "execution_trace.json",
 ]
 STANDARD_OUTPUTS = [
-    "GEO 业务词根与画像.md",
+    "GEO 关键词与画像.md",
 ]
 failures = []
 
@@ -59,7 +59,9 @@ for source in [ROOT / "main.py", *sorted((ROOT / "core").glob("*.py")), *sorted(
 
 policy = json.loads((ROOT / "config" / "pipeline_policy.json").read_text(encoding="utf-8"))
 for key, expected in {
-    "default_pipeline": "geo-v4-fixed-pipeline", "legacy_enabled": False,
+    "default_pipeline": "geo-standard-path-v1",
+    "legacy_pipeline": "geo-v4-fixed-pipeline",
+    "legacy_explicit_only": True,
     "allow_dynamic_routing": False, "allow_agent_override": False,
     "allow_unapproved_tools": False, "require_schema_validation": True,
     "require_traceability": True, "fail_closed": True,
@@ -70,7 +72,7 @@ for key, expected in {
 with tempfile.TemporaryDirectory() as temporary:
     root = Path(temporary)
     interactive = root / "interactive"
-    result = subprocess.run([sys.executable, str(ROOT / "main.py"), "--output", str(interactive)], text=True, capture_output=True)
+    result = subprocess.run([sys.executable, str(ROOT / "main.py"), "--mode", "interactive", "--output", str(interactive)], text=True, capture_output=True)
     if result.returncode:
         failures.append(f"interactive mode failed: {result.stdout}{result.stderr}")
     elif {path.name for path in interactive.iterdir()} != {"fact_packet.json", "interactive_state.json", "execution_trace.json"}:

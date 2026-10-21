@@ -39,7 +39,12 @@ def main():
     parser.add_argument("--input", type=Path, default=ROOT / "input" / "company.json")
     parser.add_argument("--handoff", type=Path, help="GEO-BD or Manual Prescription JSON for standard mode")
     parser.add_argument("--output", type=Path, default=ROOT / "output")
-    parser.add_argument("--mode", choices=("interactive", "fast_path", "standard"), default="interactive")
+    parser.add_argument(
+        "--mode",
+        choices=("standard", "interactive", "fast_path"),
+        default="standard",
+        help="standard is the default; interactive and fast_path are explicit Legacy V4 modes",
+    )
     args = parser.parse_args()
 
     try:

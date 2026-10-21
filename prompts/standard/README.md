@@ -4,4 +4,4 @@
 
 用户流程固定为：一次提交资料与交付类型 → 系统自动处理 → 必要时集中追问一次 → 输出一份结果和一条下一步建议。不得逐阶段、逐词或逐画像要求用户重复确认。
 
-关键词规则见 `references/keyword-rules.md`；画像结构和长短版规则见 `references/template-guide.md`。Legacy 文件仅兼容旧路径，不作为 Standard 规则来源。
+关键词规则见 `references/keyword-rules.md`；画像结构和长短版规则见 `references/template-guide.md`；下一步文章训练见 `references/article-training.md`。短词根和搜索角色卡只作内部依据，不独立输出。Legacy 文件仅兼容旧路径，不作为 Standard 规则来源。

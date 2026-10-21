@@ -1,5 +1,24 @@
 # Handoff
 
+## 2026-10-21：最新词与画像规则严格落地
+
+- Completed: 四类词新增短词根、意向等级、搜索角色、业务线、地区、来源与确认状态；内部搜索角色卡补齐规模、决策权限、内容偏好和排除项。
+- Persona: 品牌画像与垂直业务画像统一固定九项；完整版九项每项强制 800–1000 字，不合规时 Standard Fail Closed；简约版继续快速输出核心事实。
+- Training: 新增文章训练约束，一文只绑定一个业务线、一个搜索角色、一个意向阶段、1–2 个主词和 3–5 个自然问法。
+- Skill: 仓库和本机 `geo-keyword-persona` 更新到 4.2.0，并同步默认提示。
+- Verification: `python3 tests/run_tests.py` 通过；默认 Standard 案例导出成功；两个 Skill quick validation 通过；JSON Schema 解析和 `git diff --check` 通过。
+- Git: 用户已明确授权提交并推送；待完成最终远端同步验证。
+
+## 2026-10-20：Standard 收口与默认路径清理
+
+- Completed: Standard 改为 CLI 默认路径；修复 `delivery_mode` 被强制改回完整版的问题；画像默认简约版，完整版按确认资料展开。
+- Output: Standard 对外只保留客户资料摘要、四类关键词、九大画像、待补画像和一条下一步建议；输出文件更名为 `GEO 关键词与画像.md`。六类词根与用户决策画像继续作为内部依据，不独立输出。
+- Keyword quality: 系统推荐改为更自然的搜索、问答和意图表达；默认每类 3–5 个，最多 12 个，继续区分客户提出、系统推荐和确认状态。
+- Skill: 仓库 Skill 与 `/Users/matutu/.codex/skills/geo-keyword-persona` 统一为 `geo-keyword-persona` 4.1.0；两处 quick validation 均通过。
+- Cleanup: 客户专属文档和旧工作稿移入 `cases/xunling-ai/archive/`；旧客户语料库模板移入 `templates/legacy/`；Legacy 程序、Schema 和测试保留。
+- Verification: 80 项单元/协议/合同测试通过；`python3 tests/run_tests.py` 通过；讯灵案例只生成一份 `GEO 关键词与画像.md` 且章节只有摘要、四类词、九大画像、待补画像、下一步建议；`git diff --check` 通过。
+- Git: 本次未提交、未推送。用户明确授权后再提交并同步 GitHub。
+
 - Completed work: Standard 用户流程已收敛为一次资料收集、自动处理、仅必要时集中追问一次；指导产物只给一条下一步动作和一个相关技能建议。统一四类关键词、九大画像、简约/完整版/垂直完整版规则，并澄清 CLI 精简输出与 Skill 长版生成的边界。
 - Changed files: `SKILL.md`、入口/路由/README/架构文档、Standard 与 Legacy 交互边界提示、关键词/画像规则与模板、`core/standard_pipeline.py`、`core/standard_renderer.py`、测试、删除未引用的旧 `geo-rules.md` / `quality-rules.md` / `profile-examples.md`。
 - Verification results: `python3 -m unittest tests.test_standard_path tests.test_prompt_contract` 通过（26 项）；`python3 tests/run_tests.py` 通过（Standard Path、Legacy V4、协议与阶段检查）；讯灵 AI 案例仅生成 `GEO训练与运营词画像.md`；`git diff --check` 通过；已同步至 `origin/main`（`051edc3827e9bcd24bb5439263171dc26e88fb36`）。

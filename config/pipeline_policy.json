@@ -1,6 +1,7 @@
 {
-  "default_pipeline": "geo-v4-fixed-pipeline",
-  "legacy_enabled": false,
+  "default_pipeline": "geo-standard-path-v1",
+  "legacy_pipeline": "geo-v4-fixed-pipeline",
+  "legacy_explicit_only": true,
   "allow_dynamic_routing": false,
   "allow_agent_override": false,
   "allow_unapproved_tools": false,

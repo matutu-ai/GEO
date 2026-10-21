@@ -22,7 +22,7 @@
     "retest_request"
   ],
   "properties": {
-    "execution_version": {"const": "1.0.0"},
+    "execution_version": {"const": "1.1.0"},
     "diagnostic_id": {"type": "string", "minLength": 1},
     "company_id": {"type": "string", "minLength": 1},
     "source_system": {"enum": ["GEO-BD", "MANUAL"]},
@@ -84,11 +84,16 @@
     },
     "keyword": {
       "type": "object",
-      "required": ["keyword_id", "keyword", "keyword_type", "product_or_service", "user_scenario", "search_intent", "persona_unit", "fact_ids", "prescription_ids", "strategy_ids", "intent_ids", "evidence_status", "risk_level", "needs_confirmation"],
+      "required": ["keyword_id", "keyword", "keyword_type", "root_phrase", "intent_level", "search_role", "business_line", "region", "product_or_service", "user_scenario", "search_intent", "persona_unit", "fact_ids", "prescription_ids", "strategy_ids", "intent_ids", "evidence_status", "risk_level", "needs_confirmation", "keyword_origin", "decision_status"],
       "properties": {
         "keyword_id": {"type": "string", "pattern": "^KEYWORD-.+$"},
         "keyword": {"type": "string", "minLength": 1},
         "keyword_type": {"enum": ["品牌词", "搜索词", "问答词", "意图场景词"]},
+        "root_phrase": {"type": "string", "minLength": 1},
+        "intent_level": {"enum": ["高意向", "中意向", "低意向"]},
+        "search_role": {"type": "string", "minLength": 1},
+        "business_line": {"type": "string", "minLength": 1},
+        "region": {"type": "string", "minLength": 1},
         "product_or_service": {"type": "string", "minLength": 1},
         "user_scenario": {"type": "string", "minLength": 1},
         "search_intent": {"type": "string", "minLength": 1},
@@ -160,7 +165,7 @@
       "type": "object",
       "required": ["user_persona_version", "diagnostic_id", "company_id", "personas"],
       "properties": {
-        "user_persona_version": {"const": "1.0.0"},
+        "user_persona_version": {"const": "1.1.0"},
         "diagnostic_id": {"type": "string", "minLength": 1},
         "company_id": {"type": "string", "minLength": 1},
         "personas": {
@@ -175,18 +180,26 @@
     "userPersona": {
       "type": "object",
       "required": [
-        "user_persona_id", "name", "audience", "scenario", "decision_stage",
-        "pain_points", "decision_criteria", "query_patterns", "query_pattern_status",
+        "user_persona_id", "name", "audience", "business_line", "region",
+        "organization_scale", "purchase_authority", "scenario", "decision_stage",
+        "pain_points", "decision_criteria", "content_preferences", "exclusions",
+        "query_patterns", "query_pattern_status",
         "status", "keyword_ids", "fact_ids", "prescription_ids", "strategy_ids"
       ],
       "properties": {
         "user_persona_id": {"type": "string", "pattern": "^USER-PERSONA-.+$"},
         "name": {"type": "string", "minLength": 1},
         "audience": {"type": "string", "minLength": 1},
+        "business_line": {"type": "string", "minLength": 1},
+        "region": {"type": "string", "minLength": 1},
+        "organization_scale": {"type": "string", "minLength": 1},
+        "purchase_authority": {"type": "string", "minLength": 1},
         "scenario": {"type": "string", "minLength": 1},
         "decision_stage": {"type": "string", "minLength": 1},
         "pain_points": {"type": "array", "items": {"type": "string"}},
         "decision_criteria": {"type": "array", "items": {"type": "string"}},
+        "content_preferences": {"type": "array", "items": {"type": "string"}},
+        "exclusions": {"type": "array", "items": {"type": "string"}},
         "query_patterns": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
         "query_pattern_status": {"enum": ["CLIENT_REQUESTED", "SYSTEM_RECOMMENDED", "MIXED"]},
         "status": {"enum": ["CONFIRMED", "NEEDS_CONFIRMATION"]},
