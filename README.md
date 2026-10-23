@@ -60,6 +60,10 @@ python3 scripts/package_skill.py --install-to <技能安装目录>/geo-keyword-p
 
 打包包含入口、关键词/画像规则、固定模板和独立检查脚本；安装时备份被覆盖的旧文件，并逐文件核对与源码一致。独立 Skill 不要求客户提供处方 JSON；仓库程序继续使用现有 Handoff 合同。
 
+### 在其他 AI 中使用
+
+可将打包后的完整 Skill 提供给支持自定义指令或读取附件的 AI。不同 AI 可按同一规则执行固定流程，但不会因此永久学习；具体措辞也不承诺逐字一致。导入步骤、必读文件和纯对话环境的限制见 [`references/cross-ai-usage.md`](references/cross-ai-usage.md)。
+
 ## Legacy V4
 
 旧版仅在明确指定时运行：

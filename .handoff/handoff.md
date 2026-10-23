@@ -1,5 +1,12 @@
 # Handoff
 
+## 2026-10-23：4.7.0跨 AI 使用说明与完整包同步（进行中）
+
+- 用户确认将跨 AI 使用能力说明同步进库。新增 `references/cross-ai-usage.md`：明确 Skill 是可读取执行的提示/规则，不是模型训练，不产生永久记忆；列出导入全包、必读文件、Standard 两阶段流程、对话上下文和纯聊天环境限制。
+- 更新 `SKILL.md` 至 4.7.0、`QUICK_ROUTER.md`、`README.md` 与 `scripts/package_skill.py`；安装至 `/Users/matutu/.codex/skills/geo-keyword-persona`，9 个文件逐项核对；生成 `output/geo-keyword-persona-4.7.0.zip`。
+- 校验：源码与安装 Skill 的 `quick_validate.py` 均通过；打包逐文件校验通过；`git diff --check` 通过。`python3 tests/run_tests.py` 运行 94 项、4 项失败：`test_16_standard_outputs_traceable_keyword_fields`、`test_18f_client_keywords_are_not_truncated_by_a_fixed_limit`、`test_profile_gate_rejects_missing_unknown_excluded_and_cross_business_selection` 的两个输出模式子测。失败涉及现有关键词内容/业务归属逻辑，本次修改仅涉及说明文档与分发文件清单；不宣称全库通过。
+- 待完成：审阅并提交推送 GitHub，推送后核实 SHA 与工作区。
+
 ## 2026-10-23：4.6.0画像后词包周期提示（已完成）
 
 - 用户确认：前期建议1个品牌词和2–3个业务搜索词；新闻媒体单个品牌词包20篇、每个业务搜索词包20篇；其他媒体（商业媒体、第三方分站、自媒体等）四类词中每个单独词包每周期100–200篇。

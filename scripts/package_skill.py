@@ -11,7 +11,8 @@ ROOT = Path(__file__).resolve().parents[1]
 PACKAGE_FILES = (
     "SKILL.md", "agents/openai.yaml", "templates/delivery.md",
     "references/keyword-rules.md", "references/template-guide.md",
-    "references/article-training.md", "prompts/standard/00_quick_start.md",
+    "references/article-training.md", "references/cross-ai-usage.md",
+    "prompts/standard/00_quick_start.md",
     "scripts/check_delivery.py",
 )
 

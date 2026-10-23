@@ -1,8 +1,8 @@
 # Active Task
 
-- Current task: 无进行中的实现任务；2026-10-23 GEO Skill 4.6.0词包周期建议已完成并同步。
-- Objective: 画像交付后给出品牌词/业务搜索词的前期组合、不同媒体训练篇数及纯文本选择提示。
-- Current progress: 已写入 Standard 交互提示、文章训练参考、快速启动与垂直画像模板；Skill 已安装并同步 GitHub。
+- Current task: 2026-10-23 GEO Skill 4.7.0跨 AI 使用说明与完整包同步。
+- Objective: 明确其他 AI 按同一规则使用 GEO 库的导入方法、必读文件和一致性边界。
+- Current progress: 已更新 Skill 入口、快速路由、README 和打包清单；新增跨 AI 使用说明，已打包并安装本机 Skill。
 - Current blocker: 无。
-- Verification: 尚未执行测试；本轮执行 diff、语法和 Skill 包校验。
-- Exact next action: 等待下一项明确任务；画像交付后按词包周期建议提示用户选择。
+- Verification: Skill 源码与已安装包 quick_validate 均通过；9 文件打包/逐文件核对通过；全库 94 项测试中 4 项关键词/业务归属测试失败，详见 handoff.md；git diff --check 通过。
+- Exact next action: 完成本次变更审阅、提交并推送 GitHub，核对本地与 origin/main 一致。
