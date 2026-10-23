@@ -1,10 +1,11 @@
 # Handoff
 
-## 2026-10-23：4.6.0画像后词包周期提示（进行中）
+## 2026-10-23：4.6.0画像后词包周期提示（已完成）
 
 - 用户确认：前期建议1个品牌词和2–3个业务搜索词；新闻媒体单个品牌词包20篇、每个业务搜索词包20篇；其他媒体（商业媒体、第三方分站、自媒体等）四类词中每个单独词包每周期100–200篇。
 - 画像交付后以纯文本提供“按此规划 / 调整词或篇数 / 暂缓”选项；不自动生成或发布文章。篇数仅为用户运营计划，不作为平台效果承诺。
-- 正在更新代码提示、GEO文章训练参考和Skill模板；待包验证、安装、提交推送。
+- 更新 `SKILL.md`、`core/standard_pipeline.py`、`references/article-training.md`、快速启动和垂直画像模板；Skill 4.6.0安装至 `/Users/matutu/.codex/skills/geo-keyword-persona`，8个文件逐一与源码一致；`quick_validate.py`、`py_compile`、`git diff --check`通过。未运行全库测试。
+- 分发包：`output/geo-keyword-persona-4.6.0.zip`。GitHub `main` 已推送提交 `40c2fe5472acf43005da7b096df12d9b309626f7`；推送后本地与远端一致。
 
 ## 2026-10-23：GEO Skill 4.5.0 动态选词与整库统一（已完成）
 
