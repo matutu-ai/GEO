@@ -1,5 +1,13 @@
 # Handoff
 
+## 2026-10-23：GEO Skill 4.5.0 动态选词与整库统一（已完成）
+
+- Rules: 首轮先给四类候选词；按已确认业务核心度分组，组内按意向排序；数量动态决定、不设固定上下限、不凑同义词。两列表头保持“推荐词｜短词根”，多业务标签仅作分组，不是训练词。用户确认词与画像范围后，再产出品牌或指定业务九项画像（完整版每项800–1000字）。
+- Implementation: 移除程序每类5/12条硬截断；首轮显示全部有效候选并按业务优先级与意向排序；允许品牌画像选择跨业务的已推荐词，垂直画像仍限用户指定业务。更新 Skill、唯一模板、Standard 提示/规则、README、路由、架构与验收合同。
+- Skill: `geo-keyword-persona` 4.5.0；归档包 `output/geo-keyword-persona-4.5.0.zip`；已安装至 `/Users/matutu/.codex/skills/geo-keyword-persona`，8 个文件逐一与源码核对一致；skill-creator `quick_validate.py` 通过。
+- Verification: `git diff --check`、Python `py_compile`、交付格式检查通过。遵循本轮要求，未运行全库测试。
+- GitHub: commit `0e284a870e63d2f156080be20bbcc151101689c3` 已推送至 `origin/main`；推送后本地与远端 SHA 一致。
+
 ## 2026-10-22：4.4.2去掉意向程度列（历史，格式规则继续沿用）
 
 - 用户“还是去掉吧”按取消意向程度列执行，恢复推荐词/短词根两列；补词入口与先选词再画像流程保留。内部intent_level合同不变。
