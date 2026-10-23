@@ -1,8 +1,8 @@
 # Active Task
 
-- Current task: 无进行中的实现任务；2026-10-23 GEO Skill 4.5.0 已完成并同步。
-- Objective: 首轮按已确认业务核心度与意向度动态推荐四类词（推荐词、短词根），多业务分别呈现且不设固定词数；用户选定词并指定品牌或业务范围后生成九项画像，每项800–1000字。
-- Current progress: Skill 已打包并安装；项目规则、Standard 生成与两列词表按动态词量、多业务分组、先选词再画像执行。
+- Current task: 2026-10-23 GEO Skill 4.6.0画像交付后词包周期建议。
+- Objective: 画像交付后给出品牌词/业务搜索词的前期组合、不同媒体训练篇数及纯文本选择提示。
+- Current progress: 已写入 Standard 提示生成、文章训练参考和交付模板，待校验、打包安装与 Git 同步。
 - Current blocker: 无。
-- Verification: 尚未执行测试；本轮按当前要求执行 diff、语法和 Skill 包校验。
-- Exact next action: 等待下一项明确任务。客户实际使用时，先确认词和画像范围，再生成画像。
+- Verification: 尚未执行测试；本轮执行 diff、语法和 Skill 包校验。
+- Exact next action: 完成 Skill 包同步、审阅变更并推送 GitHub。

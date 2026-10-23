@@ -851,7 +851,7 @@ class StandardPathPipeline:
             if selecting and already_selected else
             "请选择已有词，或直接补充你想做的词（没有现成词也可描述需求），并指定品牌画像或业务画像＋业务名称；补充词先核对业务与表达，明确选定后生成九项画像，每项800–1000字。"
             if selecting else
-            "建议下一步：使用本轮已选词与画像组织 GEO 文章，优先品牌词和搜索词；每篇文章聚焦一条业务线。"
+            "下一步建议：前期选1个品牌词和2–3个业务搜索词。新闻媒体：单个品牌词包20篇、每个业务搜索词包20篇；商业媒体、第三方分站、自媒体等其他媒体：品牌词、搜索词、问答词、意图场景词中每个单独词包每周期100–200篇。请选择：1按此规划，2调整词或篇数，3暂缓。"
         )
         stages = [
             {
@@ -898,10 +898,10 @@ class StandardPathPipeline:
             ],
             "skill_recommendations": [
                 {
-                    "skill": "geo-keyword-persona" if selecting else "ai-promotion-summary",
-                    "when": "选词后生成画像" if selecting else "需要把词与画像转成推广方案时",
-                    "reason": "沿用已选词和确认事实生成九项画像。" if selecting else "基于已确认业务信息形成简明推广方向。",
-                    "next_decision": "品牌画像或指定业务画像。" if selecting else "是否需要生成 AI 推广总结。",
+                    "skill": "geo-keyword-persona",
+                    "when": "选词后生成画像" if selecting else "需要进入文章训练时",
+                    "reason": "沿用已选词和确认事实生成九项画像。" if selecting else "按已确认词包规划媒体类型与单个词包周期篇数。",
+                    "next_decision": "品牌画像或指定业务画像。" if selecting else "按此规划、调整词或篇数、暂缓。",
                 },
             ],
         }
