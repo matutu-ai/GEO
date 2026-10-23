@@ -1,8 +1,8 @@
 # Active Task
 
-- Current task: 无进行中的实现任务；2026-10-21 最新 GEO 词与画像规则已完成并同步。
-- Objective: 用户只看到一份简洁结果；内部保留关键词元数据、搜索角色、追溯、Schema、验证和 Legacy 显式兼容。
-- Current progress: 已完成。程序、Schema、测试、仓库 Skill 与本机 Skill 已更新；完整版九项逐项强制 800–1000 字。
+- Current task: 2026-10-22 GEO 两阶段选词与画像流程。
+- Objective: 首轮按已确认业务核心度与意向度动态推荐四类词（推荐词、短词根），多业务分别呈现且不设固定词数；用户选定词并指定品牌或业务范围后生成九项画像，每项800–1000字。
+- Current progress: 4.5.0统一动态词量与两阶段流程；多业务候选按业务优先级分组、意向排序；画像仍需用户先选范围。正在打包并同步 GitHub。
 - Current blocker: 无。
-- Verification: 整库验收通过；默认案例导出成功；仓库与本机 Skill 校验通过；JSON Schema 与 `git diff --check` 通过；提交 `debe3e7` 已推送至 `origin/main`。
-- Exact next action: 等待下一项明确任务。
+- Verification: 尚未执行测试；本轮按当前要求执行 diff、语法和 Skill 包校验。
+- Exact next action: 生成 Skill 包并安装，审阅变更后提交并正常推送 `origin/main`。

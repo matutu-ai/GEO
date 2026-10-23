@@ -1,4 +1,4 @@
 interface:
   display_name: "GEO 关键词与画像助手"
-  short_description: "一次收集资料，生成四类关键词与九大画像"
-  default_prompt: "使用 $geo-keyword-persona，根据已确认资料生成四类关键词与固定九大画像；默认简约版，只交付一份结果；完整版每项严格800–1000字。"
+  short_description: "按业务优先级动态推荐四类词，选定后生成九项品牌或业务画像"
+  default_prompt: "使用 $geo-keyword-persona，先按主营核心度与意向度分组推荐四类词，只展示推荐词与短词根；我确认词和画像范围后，再生成九项画像，每项800–1000字。词数按有效需求动态决定，不设固定上限。"

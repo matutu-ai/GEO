@@ -67,11 +67,11 @@ class StandardPathTests(unittest.TestCase):
         self.assertEqual(artifacts["execution"]["source_system"], "GEO-BD")
         self.assertEqual(trace["pipeline_id"], "geo-standard-path-v1")
         guidance = artifacts["guided_next_steps"]
-        self.assertEqual(guidance["delivery_mode"], "简约版")
-        self.assertFalse(guidance["decision_required"])
-        self.assertEqual(guidance["recommended_next_stage"], "geo_training_operations")
+        self.assertEqual(guidance["delivery_mode"], "完整版")
+        self.assertTrue(guidance["decision_required"])
+        self.assertEqual(guidance["recommended_next_stage"], "persona_generation")
         self.assertEqual(len(guidance["stages"]), 1)
-        self.assertFalse(guidance["stages"][0]["requires_user_confirmation"])
+        self.assertTrue(guidance["stages"][0]["requires_user_confirmation"])
         self.assertEqual(len(guidance["skill_recommendations"]), 1)
         self.assertEqual(len(guidance["optimization_directions"]), 1)
 
@@ -185,21 +185,21 @@ class StandardPathTests(unittest.TestCase):
             self.assertEqual({path.name for path in output.iterdir()}, STANDARD_OUTPUTS)
             content = (output / "GEO 关键词与画像.md").read_text(encoding="utf-8")
             for kind in ("品牌词", "搜索词", "问答词", "意图场景词"):
-                self.assertIn(f"### {kind}｜", content)
-            for purpose in ("训练品牌识别", "训练使用场景", "训练业务需求", "训练明确需求"):
+                self.assertIn(f"### {kind}\n", content)
+            for purpose in ("训练品牌识别", "匹配使用场景", "训练业务需求", "训练明确需求"):
                 self.assertIn(purpose, content)
-            self.assertIn("## 九大画像", content)
-            self.assertIn("系统推荐，待确认", content)
+            self.assertNotIn("## 九大画像", content)
+            self.assertIn("本轮候选词，等待选择", content)
             self.assertNotIn("你的选择", content)
 
-    def test_15_standard_outputs_persona_markdown(self):
+    def test_15_first_round_does_not_output_persona_markdown(self):
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory) / "output"
             result = self._run_standard_cli(output)
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             content = (output / "GEO 关键词与画像.md").read_text(encoding="utf-8")
             for name in PERSONA_UNITS:
-                self.assertIn(f"### {name}", content)
+                self.assertNotIn(f"### {name}", content)
 
     def test_16_standard_outputs_traceable_keyword_fields(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -220,12 +220,14 @@ class StandardPathTests(unittest.TestCase):
             self.assertTrue(required.issubset(matrix["keywords"][0]))
             generated = {item["keyword"] for item in matrix["keywords"] if item["keyword_origin"] == "SYSTEM_RECOMMENDED"}
             self.assertIn("测试企业（仅验收数据） 工业设备服务", generated)
-            self.assertIn("车间设备改造 工业设备服务商", generated)
-            self.assertIn("工业设备服务怎么选？", generated)
-            self.assertIn("我需要车间设备改造，请推荐工业设备服务", generated)
+            search = [item for item in matrix["keywords"] if item["keyword_type"] == "搜索词"]
+            self.assertTrue(all("车间设备改造" in item["keyword"] and "工业设备" in item["keyword"] for item in search))
+            self.assertFalse(any("用工业设备服务解决" in word or "零售怎么选" in word for word in generated))
+            self.assertTrue(any(item["keyword_origin"] == "CLIENT_REQUESTED" and item["keyword"] == "工业设备方案怎么选" for item in matrix["keywords"]))
             content = (output / "GEO 关键词与画像.md").read_text(encoding="utf-8")
-            self.assertIn("| 推荐词 | 短词根 | 意向 | 搜索角色 | 训练用途 | 状态 |", content)
-            self.assertIn("| 我需要车间设备改造，请推荐工业设备服务 |", content)
+            self.assertIn("| 推荐词 | 短词根 |", content)
+            self.assertNotIn("| 搜索角色 |", content)
+            self.assertEqual(content.count("| 推荐词 | 短词根 |"), 4)
             self.assertIn("不是平台实测热搜词", content)
             self.assertNotIn("## 六类词根", content)
             self.assertNotIn("## 核心词根画像卡", content)
@@ -270,16 +272,16 @@ class StandardPathTests(unittest.TestCase):
         requested = [item for item in artifacts["keyword_matrix"]["keywords"] if item["keyword"] == "测试企业代理加盟"]
         self.assertTrue(requested)
         self.assertEqual(requested[0]["keyword_origin"], "CLIENT_REQUESTED")
-        self.assertEqual(artifacts["guided_next_steps"]["recommended_next_stage"], "geo_training_operations")
-        self.assertFalse(artifacts["guided_next_steps"]["decision_required"])
+        self.assertEqual(artifacts["guided_next_steps"]["recommended_next_stage"], "persona_generation")
+        self.assertTrue(artifacts["guided_next_steps"]["decision_required"])
 
         company["geo_preferences"]["approved_keywords"] = ["测试企业代理加盟"]
         approved_artifacts, _ = StandardPathPipeline().run(handoff, company)
-        self.assertEqual(approved_artifacts["guided_next_steps"]["recommended_next_stage"], "geo_training_operations")
+        self.assertEqual(approved_artifacts["guided_next_steps"]["recommended_next_stage"], "persona_generation")
         approved = [item for item in approved_artifacts["keyword_matrix"]["keywords"] if item["keyword"] == "测试企业代理加盟"]
         self.assertEqual(approved[0]["decision_status"], "CONFIRMED")
 
-    def test_18a_report_uses_all_confirmed_business_roots_and_three_priority_terms(self):
+    def test_18a_sparse_facts_do_not_force_duplicate_terms(self):
         from core.standard_renderer import render_standard
         company = load_json("complete-v4-company.json")
         company["main_businesses"].append("设备运维服务")
@@ -291,14 +293,19 @@ class StandardPathTests(unittest.TestCase):
         self.assertIn("工业设备服务", report)
         self.assertIn("设备运维服务", report)
         for kind in ("品牌词", "搜索词", "问答词", "意图场景词"):
-            self.assertGreaterEqual(sum(item["keyword_type"] == kind for item in artifacts["keyword_matrix"]["keywords"]), 3)
-        self.assertIn("## 九大画像", report)
+            typed = [item["keyword"] for item in artifacts["keyword_matrix"]["keywords"] if item["keyword_type"] == kind]
+            self.assertGreaterEqual(len(typed), 1)
+            self.assertEqual(len(typed), len({word.rstrip("？?") for word in typed}))
+        self.assertNotIn("## 九大画像", report)
 
     def test_18b_vertical_report_does_not_mix_other_business_facts(self):
         from core.standard_renderer import render_standard
         company = load_json("complete-v4-company.json")
         company["main_businesses"].append("设备运维服务")
-        company["geo_preferences"] = {"delivery_mode": "简约版", "vertical_business": "设备运维服务"}
+        company["geo_preferences"] = {
+            "output_mode": "完整模式", "delivery_mode": "简约版", "vertical_business": "设备运维服务",
+            "approved_keywords": [company["company_name"]],
+        }
         artifacts, _ = StandardPathPipeline().run(load_json("geo-bd-handoff-v1.json"), company)
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory)
@@ -323,7 +330,10 @@ class StandardPathTests(unittest.TestCase):
             ("完整模式", "## 四类关键词", ()),
         ):
             company = load_json("complete-v4-company.json")
-            company["geo_preferences"] = {"output_mode": mode}
+            company["geo_preferences"] = {
+                "output_mode": mode, "delivery_mode": "简约版",
+                "approved_keywords": [company["company_name"]] if mode != "仅词模式" else [],
+            }
             artifacts, _ = StandardPathPipeline().run(load_json("geo-bd-handoff-v1.json"), company)
             with tempfile.TemporaryDirectory() as directory:
                 render_standard(Path(directory), artifacts)
@@ -339,7 +349,10 @@ class StandardPathTests(unittest.TestCase):
     def test_18da_complete_persona_requires_each_section_to_be_800_to_1000_chars(self):
         from core.standard_renderer import render_standard
         company = load_json("complete-v4-company.json")
-        company["geo_preferences"] = {"output_mode": "仅画像模式", "delivery_mode": "完整版"}
+        company["geo_preferences"] = {
+            "output_mode": "仅画像模式", "delivery_mode": "完整版",
+            "approved_keywords": [company["company_name"]],
+        }
         with self.assertRaises(StandardPathBlocked) as context:
             StandardPathPipeline().run(load_json("geo-bd-handoff-v1.json"), company)
         self.assertIn("每项必须为800-1000字", str(context.exception))
@@ -353,7 +366,7 @@ class StandardPathTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             render_standard(Path(directory), artifacts)
             report = (Path(directory) / "GEO 关键词与画像.md").read_text(encoding="utf-8")
-        self.assertIn("## 九大画像｜品牌画像", report)
+        self.assertIn("画像范围：品牌画像；详略：完整版", report)
         self.assertIn(complete_text, report)
 
     def test_18db_complete_persona_rejects_content_over_1000_chars(self):
@@ -361,6 +374,7 @@ class StandardPathTests(unittest.TestCase):
         company["geo_preferences"] = {
             "output_mode": "仅画像模式",
             "delivery_mode": "完整版",
+            "approved_keywords": [company["company_name"]],
             "complete_personas": {name: "超长画像内容" * 180 for name in PERSONA_UNITS},
         }
         with self.assertRaises(StandardPathBlocked):
@@ -382,16 +396,21 @@ class StandardPathTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             render_standard(Path(directory), artifacts)
             report = (Path(directory) / "GEO 关键词与画像.md").read_text(encoding="utf-8")
-        self.assertIn("AI搜索获客需求", report)
+        self.assertIn("AI搜索获客", report)
+        self.assertNotIn("## 九大画像", report)
         self.assertNotIn("深圳", "\n".join(search_and_answers))
 
-    def test_18f_each_keyword_type_is_limited_to_twelve(self):
+    def test_18f_client_keywords_are_not_truncated_by_a_fixed_limit(self):
         company = load_json("complete-v4-company.json")
         company["geo_preferences"] = {"requested_keywords": [
             {"keyword": f"客户词{i}", "keyword_type": "品牌词"} for i in range(13)
         ]}
-        with self.assertRaises(StandardPathBlocked):
-            StandardPathPipeline().run(load_json("geo-bd-handoff-v1.json"), company)
+        artifacts, _ = StandardPathPipeline().run(load_json("geo-bd-handoff-v1.json"), company)
+        included = {
+            item["keyword"] for item in artifacts["keyword_matrix"]["keywords"]
+            if item["keyword_origin"] == "CLIENT_REQUESTED"
+        }
+        self.assertEqual(included, {f"客户词{i}" for i in range(13)})
 
     def test_19_legacy_interactive_still_passes(self):
         with tempfile.TemporaryDirectory() as directory:

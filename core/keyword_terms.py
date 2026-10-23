@@ -44,7 +44,7 @@ def without_regions(value, terms):
 
 def compact_keyword_root(value, terms=()):
     """Extract a concise, source-derived cue without manufacturing a new claim."""
-    text = without_regions(value, terms)
+    text = without_regions(value, terms).strip("？！?!。")
     if 2 <= len(text) <= 10:
         return text
     parts = [part.strip(" ，、；。:：") for part in _ROOT_BREAKS.split(text)]

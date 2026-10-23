@@ -54,7 +54,8 @@ def main():
                 raise StandardPathBlocked("STANDARD-007: --handoff is required in standard mode")
             handoff = load_input(args.handoff)
             artifacts, _trace = StandardPathPipeline().run(handoff, data)
-            prepare_output(args.output)
+            if args.output.resolve() in {ROOT, ROOT.parent}:
+                raise StandardPathBlocked("OUTPUT-001: output directory must not be the repository or its parent")
             render_standard(args.output, artifacts)
             print(f"PASS: generated Prescription-driven Standard Path assets for {data['company_name']}")
             for path in sorted(args.output.iterdir()):
@@ -76,7 +77,7 @@ def main():
         print(f"PASS: generated validated GEO V4 assets for {data['company_name']}")
         for path in sorted(args.output.iterdir()):
             print(path.name)
-    except (PipelineBlocked, StandardPathBlocked) as exc:
+    except (PipelineBlocked, StandardPathBlocked, ValueError) as exc:
         print(f"BLOCKED: {exc}")
         raise SystemExit(2)
 

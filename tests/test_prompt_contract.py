@@ -12,19 +12,22 @@ class PromptContractTests(unittest.TestCase):
         prompt = (ROOT / "prompts/standard/00_quick_start.md").read_text(encoding="utf-8")
         for mode in ("完整模式", "仅词模式", "仅画像模式"):
             self.assertIn(mode, prompt)
-        self.assertIn("默认完整模式", prompt)
+        self.assertIn("默认仅词模式", prompt)
         self.assertIn("不输出画像", prompt)
         self.assertIn("仅画像模式不输出关键词", prompt)
-        self.assertIn("默认简约版", prompt)
+        self.assertIn("默认完整版", prompt)
         self.assertIn("每项 800–1000 字", prompt)
 
     def test_standard_flow_avoids_repeated_confirmation(self):
         prompt = (ROOT / "prompts/standard/00_quick_start.md").read_text(encoding="utf-8")
         confirmation = (ROOT / "prompts/standard/01_evidence_confirmation.md").read_text(encoding="utf-8")
-        self.assertIn("不逐阶段、逐词或逐画像", prompt)
+        self.assertIn("不逐阶段、逐词或逐画像重复确认", prompt)
         self.assertIn("合并所有必要问题", prompt)
         self.assertIn("一次", confirmation)
         self.assertIn("不要求逐字段反复确认", confirmation)
+        self.assertIn("只说“继续”不能视为全选", prompt)
+        self.assertIn("直接补充你想做的词", prompt)
+        self.assertIn("仅补词不当作选定", prompt)
 
     def test_four_keyword_types_are_canonical(self):
         rules = (ROOT / "references/keyword-rules.md").read_text(encoding="utf-8")

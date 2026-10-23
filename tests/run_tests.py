@@ -136,12 +136,14 @@ with tempfile.TemporaryDirectory() as temporary:
     else:
         try:
             report = (standard / STANDARD_OUTPUTS[0]).read_text(encoding="utf-8")
-            for heading in ["### 品牌词｜", "### 搜索词｜", "### 问答词｜", "### 意图场景词｜", "## 九大画像"]:
+            for heading in ["### 品牌词\n", "### 搜索词\n", "### 问答词\n", "### 意图场景词\n"]:
                 if heading not in report:
                     failures.append(f"standard path: worksheet missing {heading}")
             for heading in ["产品或服务描述", "产品或服务特点", "品牌故事", "用户痛点", "信任背书", "客户案例", "社会贡献", "客户评价", "创始人介绍"]:
-                if f"### {heading}" not in report:
-                    failures.append(f"standard path: worksheet missing {heading}")
+                if f"### {heading}" in report:
+                    failures.append(f"standard path: first round must not output {heading}")
+            if "## 九大画像" in report:
+                failures.append("standard path: first round must wait for keyword selection")
             if "品牌词练品牌识别" not in report or "你的选择" in report:
                 failures.append("standard path: brief lacks training purpose, persona value, or includes selection worksheet")
         except OSError as exc:
@@ -159,7 +161,7 @@ with tempfile.TemporaryDirectory() as temporary:
 protocol_result = subprocess.run([
     sys.executable, "-m", "unittest",
     "tests/test_protocol_compliance.py", "tests/test_contract_boundaries.py",
-    "tests/test_standard_path.py", "tests/test_prompt_contract.py",
+    "tests/test_standard_path.py", "tests/test_prompt_contract.py", "tests/test_delivery_contract.py",
 ], cwd=ROOT, text=True, capture_output=True)
 if protocol_result.returncode:
     failures.append(f"protocol compliance failed: {protocol_result.stdout}{protocol_result.stderr}")

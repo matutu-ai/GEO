@@ -1,5 +1,38 @@
 # Handoff
 
+## 2026-10-22：4.4.2去掉意向程度列（历史，格式规则继续沿用）
+
+- 用户“还是去掉吧”按取消意向程度列执行，恢复推荐词/短词根两列；补词入口与先选词再画像流程保留。内部intent_level合同不变。
+- 用户要求继续跑流程：新版大作美居两列候选词已生成，通过格式检查；用户尚未明确所选词与画像范围，不能将“继续”视为全选。九项完整版仍缺品牌故事、背书、案例评价、创始人等材料。
+- 整库回归通过，后续安装状态见ACTIVE.md。未提交、未推送GitHub。
+
+## 2026-10-22：4.4.1意向程度与客户补词（历史，词数限制已被4.5.0取代）
+
+- 用户要求增加意向程度；词表恢复三列，列名统一“推荐词｜短词根｜意向程度”。四类词与先选词后画像流程不变。
+- 补词：保留原词，核对业务、分类、词根及意向；必要时给1–2个优化候选，不默改、不自动批准。CLI复用requested_keywords，未知已选词提示补词入口；字段校验不能代替语义核对。
+- 验证：整库回归、两处Skill验证、8文件安装包同步通过；新增补词待确认→明确选定→画像绑定测试。大作美居三列案例一次分隔符错误已修正，通过格式检查。
+- 安装：output/geo-keyword-persona-4.4.1.zip；旧安装备份 /var/folders/l6/jwyqnq450c786fjrxkwvrxn00000gn/T/geo-skill-backup-1ccsr95y。未提交、未推送GitHub。
+
+## 2026-10-22：4.4.0先选词、再生成画像（历史，阶段流程继续沿用）
+
+- Flow: 首轮默认仅词模式，四类词统一推荐词/短词根两列；用户一次选择词和画像范围后，再生成品牌或单一业务画像。画像默认完整版，固定九项每项800–1000字；简约版显式选择。
+- Current keyword policy (added 2026-10-23; supersedes earlier quantity limits): recommend all distinct, fact-supported candidates with no fixed per-category cap; order/group by confirmed business core priority, then intent strength. Keep the two-column delivery format. User confirms terms and profile scope before profile generation; a vertical profile remains limited to the one business the user names.
+- Gate: approved_keywords必须是本轮有效原词；拒绝未知、已排除、禁用地区和业务不符的选择。候选不是批准；合并导出只列已选词。仅画像模式章首记录所选词。跨轮通过requested_keywords保留所选条目。
+- Scope: 搜索词以场景/人群＋产品业务为主，不机械追加定位；意向保留内部合同。12阶段及Legacy/GEO-BD边界不变。CLI不调用模型写长文，完整版需要确认正文，不能凑字数或编造。
+- Validation: 48项定向测试首次有1条旧断言失败（要求首轮显示画像中的原场景文字），已修正；整库tests/run_tests.py通过，两处Skill quick_validate通过，git diff --check通过；本机与4.4.0安装包8文件逐字节一致。未做本版独立模型长文生成或实测推广效果验证。
+- Installed: output/geo-keyword-persona-4.4.0.zip；原安装文件备份 /var/folders/l6/jwyqnq450c786fjrxkwvrxn00000gn/T/geo-skill-backup-2w6kcd54。
+- Git: 未提交、未推送；以下4.3.0及更早记录是历史，不代表当前格式。
+
+## 2026-10-22：统一三列词表、九项画像与独立 Skill 包
+
+- Completed: templates/delivery.md 为唯一版式，程序直接读取，独立 Skill 同包提供；词表固定推荐词/短词根/意向三列，画像九项顺序固定，待补资料与下一步建议固定结尾。
+- Generation: 客户主体不再从业务名公共前缀推断；问答/意图使用产品或服务表达，不再机械拼接“零售怎么选/用业务解决需求”；短词根逐条提取；标点差异的重复词合并并保留客户原句；不因“需要”或类型标签一律判高意向。
+- Skill: 4.3.0；scripts/package_skill.py 从同一源码打包8个文件并逐文件核对。本机旧文件备份在 /var/folders/l6/jwyqnq450c786fjrxkwvrxn00000gn/T/geo-skill-backup-u98firax。
+- Validation: scripts/check_delivery.py 是程序与独立 Skill 共用的最终结构检查；完整模式/仅词/仅画像及简约/完整版分别检查。程序按画像名称匹配模板位置，避免输入顺序变化导致正文错位。
+- Verification: python3 tests/run_tests.py 通过；仓库及本机 Skill quick_validate.py 通过；独立安装包实际生成大作美居简约完整案例并通过检查；主代理复核后统一了两处品牌词根。相同资料的程序案例与 Skill 案例章节一致，均为四张三列表。git diff --check 通过。
+- Limits: 案例基于用户提供事实，未执行平台搜索热度或推荐效果验证。独立模型验证仅一轮，不保证不同模型逐字一致；统一模板与检查固定结构。
+- Git: 本轮未提交、未推送。以下记录是旧版本历史。
+
 ## 2026-10-21：最新词与画像规则严格落地
 
 - Completed: 四类词新增短词根、意向等级、搜索角色、业务线、地区、来源与确认状态；内部搜索角色卡补齐规模、决策权限、内容偏好和排除项。
@@ -13,7 +46,7 @@
 
 - Completed: Standard 改为 CLI 默认路径；修复 `delivery_mode` 被强制改回完整版的问题；画像默认简约版，完整版按确认资料展开。
 - Output: Standard 对外只保留客户资料摘要、四类关键词、九大画像、待补画像和一条下一步建议；输出文件更名为 `GEO 关键词与画像.md`。六类词根与用户决策画像继续作为内部依据，不独立输出。
-- Keyword quality: 系统推荐改为更自然的搜索、问答和意图表达；默认每类 3–5 个，最多 12 个，继续区分客户提出、系统推荐和确认状态。
+- Historical rule, superseded: system recommendations previously used per-type count limits. Do not apply this archived limit; follow the current dynamic quantity policy above.
 - Skill: 仓库 Skill 与 `/Users/matutu/.codex/skills/geo-keyword-persona` 统一为 `geo-keyword-persona` 4.1.0；两处 quick validation 均通过。
 - Cleanup: 客户专属文档和旧工作稿移入 `cases/xunling-ai/archive/`；旧客户语料库模板移入 `templates/legacy/`；Legacy 程序、Schema 和测试保留。
 - Verification: 80 项单元/协议/合同测试通过；`python3 tests/run_tests.py` 通过；讯灵案例只生成一份 `GEO 关键词与画像.md` 且章节只有摘要、四类词、九大画像、待补画像、下一步建议；`git diff --check` 通过。

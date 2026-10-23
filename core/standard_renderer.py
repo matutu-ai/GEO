@@ -1,22 +1,18 @@
-"""Render one traceable GEO root, keyword and persona report."""
+"""Render the same bundled delivery template used by the standalone Skill."""
 
-from core.keyword_terms import compact_keyword_root, confirmed_region_terms
+import re
+
+from core.keyword_terms import confirmed_region_terms
+from scripts.check_delivery import delivery_template, validate_delivery
 
 
 STANDARD_OUTPUTS = ("GEO 关键词与画像.md",)
-KEYWORD_PURPOSES = {
-    "品牌词": "训练品牌识别及品牌—业务—主体关联",
-    "搜索词": "训练使用场景＋业务＋定位的检索匹配",
-    "问答词": "训练业务需求的对比、判断与选择回答",
-    "意图场景词": "训练明确需求＋场景＋产品业务的方案匹配",
+KEYWORD_SLOTS = {
+    "品牌词": "brand_rows", "搜索词": "search_rows",
+    "问答词": "question_rows", "意图场景词": "intent_rows",
 }
-KEYWORD_SHORT_PURPOSES = {
-    "品牌词": "品牌关联", "搜索词": "场景检索", "问答词": "对比决策", "意图场景词": "需求匹配",
-}
-ROOT_FIELDS = {
-    "company_name": "品牌根", "main_businesses": "业务根", "positioning": "定位根",
-    "target_customers": "人群根", "use_cases": "场景根", "user_pain_points": "需求根",
-}
+
+
 def _text(value):
     if isinstance(value, list):
         return "；".join(_text(item) for item in value if item not in (None, ""))
@@ -31,85 +27,16 @@ def _cell(value):
     return str(value).replace("|", "\\|").replace("\n", " ")
 
 
-def _keyword_status(item):
-    if item.get("decision_status") == "CONFIRMED":
-        return "已确认"
-    if item.get("keyword_origin") == "CLIENT_REQUESTED":
-        return "客户提出，待确认"
-    return "系统推荐，待确认"
-
-
 def _persona_summary(persona, full=False):
     if persona["status"] != "READY":
-        return "【需企业提供真实佐证】"
+        return "待补：需企业提供真实佐证。"
+    if full:
+        return "；".join(persona["confirmed_content"])
     fragments = [
         part.strip() for value in persona["confirmed_content"]
         for part in value.split("；") if part.strip()
     ]
-    return "；".join(fragments if full else fragments[:2]) or "【需企业提供真实佐证】"
-
-
-def _items(value):
-    return value if isinstance(value, list) else [value]
-
-
-def _root_cue(value, region_terms=()):
-    return compact_keyword_root(_text(value).strip(), region_terms)
-
-
-def _brand_cue(source_facts):
-    businesses = _items(source_facts["main_businesses"]["value"])
-    if len(businesses) > 1:
-        common = str(businesses[0])
-        for business in businesses[1:]:
-            while common and not str(business).startswith(common):
-                common = common[:-1]
-        if 2 <= len(common) <= 10:
-            return common, source_facts["main_businesses"]
-    fact = source_facts["company_name"]
-    return _root_cue(fact["value"]) or _text(fact["value"]), fact
-
-
-def _roots(source_facts, vertical_business):
-    roots, seen = [], set()
-    regions = confirmed_region_terms(source_facts.get("service_regions", {}).get("value", []))
-    for field, kind in ROOT_FIELDS.items():
-        fact = source_facts[field]
-        if vertical_business and field not in ("company_name", "main_businesses", "positioning"):
-            continue
-        if fact["status"] != "CONFIRMED":
-            continue
-        values = [_brand_cue(source_facts)[0]] if field == "company_name" else _items(fact["value"])
-        if field == "use_cases":
-            values = [value for value in values if not _text(value).strip().startswith(
-                ("考察", "申请", "寻找", "准备", "核验", "评估", "判断", "选择", "了解", "对比")
-            )]
-        if field == "company_name":
-            fact = _brand_cue(source_facts)[1]
-        for value in values:
-            if field in ("main_businesses", "use_cases", "user_pain_points"):
-                root = _text(value).strip() if field == "main_businesses" else _root_cue(value, regions)
-            else:
-                root = _root_cue(value)
-            if not root or (field == "main_businesses" and vertical_business and root != vertical_business):
-                continue
-            key = (kind, root.replace(" ", "").lower())
-            if key in seen:
-                continue
-            seen.add(key)
-            roots.append({"name": root, "type": kind, "fact_id": fact["fact_id"],
-                          "field": fact["field"], "core": kind == "业务根"})
-    return roots
-
-
-def _linked_roots(item, roots):
-    linked = []
-    linked_names = set()
-    for root in roots:
-        if root["name"] in item["keyword"] and root["name"] not in linked_names:
-            linked.append(root)
-            linked_names.add(root["name"])
-    return linked
+    return "；".join(fragments[:2]) or "待补：需企业提供真实佐证。"
 
 
 def render_standard(output_dir, artifacts):
@@ -120,72 +47,99 @@ def render_standard(output_dir, artifacts):
     }
     if set(artifacts) != required:
         raise ValueError("STANDARD_RENDER-001: complete validated Standard artifacts are required")
-
     context = artifacts["company_context"]
     values, sources = context["values"], context["source_facts"]
     guidance = artifacts["guided_next_steps"]
     company = _text(values["company_name"])
-    businesses = _items(values["main_businesses"])
+    businesses = values["main_businesses"]
+    businesses = businesses if isinstance(businesses, list) else [businesses]
     selected = guidance["vertical_business"]
     if selected not in businesses:
         raise ValueError("STANDARD_RENDER-002: vertical business must match a confirmed main business")
-    vertical = selected if context["vertical_business_requested"] and len(businesses) > 1 else ""
-    roots = _roots(sources, vertical)
-    excluded = set(guidance["keyword_review"]["excluded"])
-    keywords = [item for item in artifacts["keyword_matrix"]["keywords"] if item["keyword"] not in excluded]
-    if vertical:
-        keywords = [item for item in keywords if vertical in item["keyword"] or item["keyword"] == company]
-    personas = artifacts["persona_plan"]["personas"]
-    output_mode = context.get("output_mode", "完整模式")
+    vertical = selected if context["vertical_business_requested"] else ""
+    output_mode = context.get("output_mode", "仅词模式")
     delivery_mode = guidance["delivery_mode"]
-    if output_mode not in ("完整模式", "仅词模式", "仅画像模式"):
-        raise ValueError("STANDARD_RENDER-003: unsupported output mode")
+    template = delivery_template(output_mode)
     regions = confirmed_region_terms(sources.get("service_regions", {}).get("value", []))
-    lines = [
-        f"# {company}｜GEO 词与画像", "", "## 客户资料摘要", "",
-        f"- 主体：{_cell(company)}；业务：{_cell(vertical or _text(businesses))}；定位：{_cell(values['positioning'])}",
-        f"- 目标客户：{_cell('待核对指定业务人群' if vertical else _text(values['target_customers']))}；产品/服务：{_cell('待核对指定业务产品' if vertical else _text(artifacts['product_context']['products']))}",
-        f"- 输出：{_cell(output_mode)}；画像：{_cell('业务画像' if vertical else '品牌画像')}·{_cell(delivery_mode)}。",
-        "- 事实仅取自客户已确认资料；缺失信息标注待补；推荐词为候选表达，不代表平台热度或 AI 推荐结果。", "",
-    ]
-
+    excluded = set(guidance["keyword_review"]["excluded"])
+    approved = guidance["keyword_review"]["approved"]
+    if output_mode != "仅词模式" and not approved:
+        raise ValueError("STANDARD_RENDER-005: 生成画像前须选定关键词")
+    keywords, notes = [], []
     if output_mode != "仅画像模式":
-        lines.extend(["## 四类关键词", "",
-                      "品牌词练品牌识别，搜索词练场景匹配，问答词练决策回答，意图场景词练需求匹配。系统建议不是平台实测热搜词。", ""])
-        for kind, purpose in KEYWORD_PURPOSES.items():
-            lines.extend([f"### {kind}｜{purpose}", "", "| 推荐词 | 短词根 | 意向 | 搜索角色 | 训练用途 | 状态 |",
-                          "| --- | --- | --- | --- | --- | --- |"])
-            candidates = [item for item in keywords if item["keyword_type"] == kind]
-            for item in candidates:
-                linked = _linked_roots(item, roots)
-                root_names = item.get("root_phrase") or "＋".join(root["name"] for root in linked) or "待核对"
-                status = _keyword_status(item)
-                if item["keyword_origin"] == "CLIENT_REQUESTED" and kind in ("搜索词", "问答词") and any(term in item["keyword"] for term in regions):
-                    status += "；含地区，默认不纳入推荐"
-                lines.append(
-                    f"| {_cell(item['keyword'])} | {_cell(root_names)} | {_cell(item['intent_level'])} | "
-                    f"{_cell(item['search_role'])} | {_cell(KEYWORD_SHORT_PURPOSES[kind])} | {_cell(status)} |"
-                )
-            if not candidates:
-                lines.append(f"| 待补 | — | — | — | {_cell(purpose)} | 待确认 |")
-            lines.append("")
+        for item in artifacts["keyword_matrix"]["keywords"]:
+            if output_mode == "完整模式" and item["keyword"] not in approved:
+                continue
+            if item["keyword"] in excluded:
+                continue
+            if output_mode != "仅词模式" and vertical and item["business_line"] != selected:
+                notes.append(f"另属业务线，待单独整理：{_cell(item['keyword'])}")
+                continue
+            if item["keyword_type"] in ("搜索词", "问答词") and any(term in item["keyword"] for term in regions):
+                notes.append(f"含地区的原词保留在内部记录，未纳入推荐：{_cell(item['keyword'])}")
+                continue
+            keywords.append(item)
 
-    if output_mode != "仅词模式":
-        profile_name = f"业务画像｜{vertical}" if vertical else "品牌画像"
-        lines.extend([f"## 九大画像｜{profile_name}", ""])
-        for persona in personas:
-            name = persona["name"]
-            summary = (
-                _persona_summary(persona, full=True)
-                if delivery_mode == "完整版"
-                else "【需确认本板块资料与指定业务的关联】"
-                if vertical
-                else _persona_summary(persona, full=False)
+    slots = {
+        "company": _cell(company),
+        "summary": "\n".join([
+            f"- 主体：{_cell(company)}；主营业务：{_cell(vertical or _text(businesses))}。",
+            f"- 本轮选词业务：{_cell(selected)}；定位：{_cell(values['positioning'])}。",
+            f"- 目标客户：{_cell('待核对指定业务人群' if vertical else _text(values['target_customers']))}；产品/服务：{_cell('待核对指定业务产品' if vertical else _text(artifacts['product_context']['products']))}。",
+            f"- 输出模式：{output_mode}。",
+        ]),
+        "keyword_note": (
+            "本轮候选词，等待选择；推荐不代表平台热度或 AI 推荐结果。"
+            if output_mode == "仅词模式" else "以下仅列本轮已选词；推荐不代表平台热度或 AI 推荐结果。"
+        ),
+        "profile_scope": f"业务画像｜{_cell(vertical)}" if vertical else "品牌画像",
+        "delivery_mode": delivery_mode,
+        "selected_terms": "；".join(_cell(word) for word in approved),
+        "next_step": _cell(guidance["next_prompt"]),
+    }
+    for kind, slot in KEYWORD_SLOTS.items():
+        typed_keywords = [item for item in keywords if item["keyword_type"] == kind]
+        group_count = len({item["business_line"] for item in typed_keywords})
+        rows, previous_business = [], None
+        for item in typed_keywords:
+            if group_count > 1 and item["business_line"] != previous_business:
+                rows.append(f"| **业务：{_cell(item['business_line'])}** | — |")
+                previous_business = item["business_line"]
+            rows.append(f"| {_cell(item['keyword'])} | {_cell(item['root_phrase'])} |")
+        slots[slot] = "\n".join(rows) or ("| 本轮未选 | — |" if output_mode == "完整模式" else "| 待补 | — |")
+    if output_mode == "仅词模式":
+        first_by_type = {
+            kind: next((item["keyword"] for item in keywords if item["keyword_type"] == kind), "")
+            for kind in KEYWORD_SLOTS
+        }
+        combination = [
+            f"{kind}：{first_by_type[kind]}" for kind in KEYWORD_SLOTS if first_by_type[kind]
+        ]
+        if combination:
+            slots["keyword_note"] += (
+                "\n\n建议训练组合（同一业务，可自行增删）："
+                + "；".join(combination)
+                + "。请按本轮目标选词；未明确选择的候选词不会进入画像。"
             )
-            lines.extend([f"### {name}", "", _cell(summary), ""])
-        if output_mode == "完整模式":
-            missing = [persona["name"] for persona in personas if persona["status"] != "READY"]
-            lines.extend(["## 待补画像", "", "、".join(missing) if missing else "暂无待补画像。", ""])
-    lines.extend(["## 下一步建议", "", _cell(guidance["next_prompt"])])
+    if output_mode != "仅词模式":
+        profile_template = template.split("## 九大画像\n", 1)[1].split("## 待补资料", 1)[0]
+        names = re.findall(r"^### (.+)$", profile_template, re.M)
+        personas = artifacts["persona_plan"]["personas"]
+        by_name = {item["name"]: item for item in personas}
+        if len(personas) != len(names) or set(by_name) != set(names):
+            raise ValueError("STANDARD_RENDER-004: persona names must match the fixed nine sections")
+        for index, name in enumerate(names, start=1):
+            persona = by_name[name]
+            uncertain_vertical = bool(vertical) and delivery_mode == "简约版"
+            summary = (
+                "【需确认本板块资料与指定业务的关联】"
+                if uncertain_vertical else _persona_summary(persona, delivery_mode == "完整版")
+            )
+            slots[f"persona_{index}"] = _cell(summary)
+            if uncertain_vertical or persona["status"] != "READY":
+                notes.append(f"{persona['name']}：待补对应业务的已确认资料。")
+    slots["missing"] = "\n".join(f"- {note}" for note in dict.fromkeys(notes)) or "暂无待补资料。"
+    report = re.sub(r"\{\{(\w+)\}\}", lambda match: slots[match[1]], template)
+    validate_delivery(report, output_mode, delivery_mode)
     output_dir.mkdir(parents=True, exist_ok=True)
-    (output_dir / STANDARD_OUTPUTS[0]).write_text("\n".join(lines) + "\n", encoding="utf-8")
+    (output_dir / STANDARD_OUTPUTS[0]).write_text(report, encoding="utf-8")
