@@ -298,23 +298,15 @@ class StandardPathTests(unittest.TestCase):
             self.assertEqual(len(typed), len({word.rstrip("？?") for word in typed}))
         self.assertNotIn("## 九大画像", report)
 
-    def test_18b_vertical_report_does_not_mix_other_business_facts(self):
-        from core.standard_renderer import render_standard
+    def test_18b_vertical_report_requires_complete_business_facts(self):
         company = load_json("complete-v4-company.json")
         company["main_businesses"].append("设备运维服务")
         company["geo_preferences"] = {
-            "output_mode": "完整模式", "delivery_mode": "简约版", "vertical_business": "设备运维服务",
+            "output_mode": "完整模式", "delivery_mode": "完整版", "vertical_business": "设备运维服务",
             "approved_keywords": [company["company_name"]],
         }
-        artifacts, _ = StandardPathPipeline().run(load_json("geo-bd-handoff-v1.json"), company)
-        with tempfile.TemporaryDirectory() as directory:
-            output = Path(directory)
-            render_standard(output, artifacts)
-            report = (output / "GEO 关键词与画像.md").read_text(encoding="utf-8")
-        self.assertIn("设备运维服务", report)
-        self.assertNotIn("工业设备服务怎么选", report)
-        self.assertIn("【需确认本板块资料与指定业务的关联】", report)
-        self.assertIn("待核对指定业务产品", report)
+        with self.assertRaises(StandardPathBlocked):
+            StandardPathPipeline().run(load_json("geo-bd-handoff-v1.json"), company)
 
     def test_18c_unknown_vertical_business_fails_closed(self):
         company = load_json("complete-v4-company.json")
@@ -331,9 +323,13 @@ class StandardPathTests(unittest.TestCase):
         ):
             company = load_json("complete-v4-company.json")
             company["geo_preferences"] = {
-                "output_mode": mode, "delivery_mode": "简约版",
+                "output_mode": mode, "delivery_mode": "完整版",
                 "approved_keywords": [company["company_name"]] if mode != "仅词模式" else [],
             }
+            if mode != "仅词模式":
+                company["geo_preferences"]["complete_personas"] = {
+                    name: "仅用于字数验收的合成文本。" * 70 for name in PERSONA_UNITS
+                }
             artifacts, _ = StandardPathPipeline().run(load_json("geo-bd-handoff-v1.json"), company)
             with tempfile.TemporaryDirectory() as directory:
                 render_standard(Path(directory), artifacts)

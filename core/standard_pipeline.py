@@ -279,6 +279,8 @@ class StandardPathPipeline:
         output_mode = raw.get("output_mode", "仅词模式")
         if output_mode not in ("完整模式", "仅词模式", "仅画像模式"):
             raise StandardPathBlocked("STANDARD-014: output_mode must be 完整模式, 仅词模式 or 仅画像模式")
+        if output_mode != "仅词模式" and delivery_mode != "完整版":
+            raise StandardPathBlocked("STANDARD-011: 所有画像固定九项且每项800–1000字，请使用完整版")
         if "include_region_in_intent" in raw and not isinstance(raw["include_region_in_intent"], bool):
             raise StandardPathBlocked("STANDARD-017: include_region_in_intent must be a boolean")
         list_fields = ("requested_keywords", "excluded_keywords", "approved_keywords", "user_personas")
@@ -708,10 +710,7 @@ class StandardPathPipeline:
                 "prescription_ids": prescription_ids,
                 "strategy_ids": strategy_ids,
             })
-        if (
-            self._preferences["delivery_mode"] == "完整版"
-            and self._preferences["output_mode"] != "仅词模式"
-        ):
+        if self._preferences["output_mode"] != "仅词模式":
             invalid = [
                 f"{item['name']}={_content_length('；'.join(item['confirmed_content']))}字"
                 for item in personas

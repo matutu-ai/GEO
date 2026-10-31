@@ -1,11 +1,18 @@
 # Handoff
 
-## 2026-10-23：4.7.0跨 AI 使用说明与完整包同步（进行中）
+## 2026-10-31：4.9.0九项画像统一800–1000字（已实施）
+
+- 用户要求之后所有画像每项800–1000字。品牌画像与垂直业务画像均固定九项，不再输出简约画像；仅词模式不受画像长度门槛影响。
+- 更新 Skill、Standard 文档、画像模板、程序门禁、渲染和交付检查；画像输出若传入简约版立即拒绝，完整画像逐项校验长度与已确认事实。Legacy 路径未改。
+- 本轮新增并通过短版拦截、固定结构和完整版长度三项关键测试；Skill 4.9.0九文件打包、安装核对与 quick_validate 通过。较广的44项测试仍有此前存在的关键词内容/业务归属断言失败；无新增画像门禁错误。
+- 同步状态：以 `origin/main` 与本地 HEAD 核对；提交记录见 Git 历史。
+
+## 2026-10-23：4.7.0跨 AI 使用说明与完整包同步（已完成）
 
 - 用户确认将跨 AI 使用能力说明同步进库。新增 `references/cross-ai-usage.md`：明确 Skill 是可读取执行的提示/规则，不是模型训练，不产生永久记忆；列出导入全包、必读文件、Standard 两阶段流程、对话上下文和纯聊天环境限制。
 - 更新 `SKILL.md` 至 4.7.0、`QUICK_ROUTER.md`、`README.md` 与 `scripts/package_skill.py`；安装至 `/Users/matutu/.codex/skills/geo-keyword-persona`，9 个文件逐项核对；生成 `output/geo-keyword-persona-4.7.0.zip`。
 - 校验：源码与安装 Skill 的 `quick_validate.py` 均通过；打包逐文件校验通过；`git diff --check` 通过。`python3 tests/run_tests.py` 运行 94 项、4 项失败：`test_16_standard_outputs_traceable_keyword_fields`、`test_18f_client_keywords_are_not_truncated_by_a_fixed_limit`、`test_profile_gate_rejects_missing_unknown_excluded_and_cross_business_selection` 的两个输出模式子测。失败涉及现有关键词内容/业务归属逻辑，本次修改仅涉及说明文档与分发文件清单；不宣称全库通过。
-- 待完成：审阅并提交推送 GitHub，推送后核实 SHA 与工作区。
+- GitHub已推送提交 `8bd0ff8b74b2126115e55b20a925700baa614c87`。
 
 ## 2026-10-23：4.6.0画像后词包周期提示（已完成）
 

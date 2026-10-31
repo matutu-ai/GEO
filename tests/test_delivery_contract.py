@@ -21,9 +21,12 @@ class DeliveryContractTests(unittest.TestCase):
         company = copy.deepcopy(company or load_json("complete-v4-company.json"))
         preferences = company.setdefault("geo_preferences", {})
         preferences["output_mode"] = mode
-        preferences.setdefault("delivery_mode", "简约版")
+        preferences.setdefault("delivery_mode", "完整版")
         if mode != "仅词模式":
             preferences.setdefault("approved_keywords", [company["company_name"]])
+            preferences.setdefault("complete_personas", {
+                name: name + "仅用于字数验收的合成文本。" * 68 for name in PERSONA_UNITS
+            })
         artifacts, _ = StandardPathPipeline().run(load_json("geo-bd-handoff-v1.json"), company)
         with tempfile.TemporaryDirectory() as directory:
             render_standard(Path(directory), artifacts)
@@ -36,7 +39,7 @@ class DeliveryContractTests(unittest.TestCase):
                 first, _ = self.report(mode)
                 second, _ = self.report(mode)
                 self.assertEqual(first, second)
-                validate_delivery(first, mode, "简约版")
+                validate_delivery(first, mode, "完整版")
                 headings = re.findall(r"^## .+", first, re.M)
                 self.assertEqual(headings[0], "## 客户资料摘要")
                 self.assertEqual(headings[-2:], ["## 待补资料", "## 下一步建议"])
@@ -57,9 +60,9 @@ class DeliveryContractTests(unittest.TestCase):
         ]
         for invalid in invalid_reports:
             with self.assertRaises(ValueError):
-                validate_delivery(invalid, "完整模式", "简约版")
+                validate_delivery(invalid, "完整模式", "完整版")
         with self.assertRaises(ValueError):
-            validate_delivery(report, "完整模式", "完整版")
+            validate_delivery(report, "完整模式", "简约版")
 
     def test_profile_contents_follow_names_even_if_payload_order_changes(self):
         _, artifacts = self.report()
@@ -68,7 +71,7 @@ class DeliveryContractTests(unittest.TestCase):
             render_standard(Path(directory), artifacts)
             report = (Path(directory) / "GEO 关键词与画像.md").read_text(encoding="utf-8")
         product = report.split("### 产品或服务描述\n", 1)[1].split("### 产品或服务特点", 1)[0]
-        self.assertIn("工业设备方案", product)
+        self.assertIn("产品或服务描述", product)
         artifacts["persona_plan"]["personas"][0]["name"] = "错误板块"
         with tempfile.TemporaryDirectory() as directory, self.assertRaises(ValueError):
             render_standard(Path(directory), artifacts)
@@ -118,7 +121,7 @@ class DeliveryContractTests(unittest.TestCase):
             case = root / "case.md"
             case.write_text(report, encoding="utf-8")
             result = subprocess.run([sys.executable, str(target / "scripts/check_delivery.py"), str(case),
-                                     "--output-mode", "完整模式", "--delivery-mode", "简约版"],
+                                     "--output-mode", "完整模式", "--delivery-mode", "完整版"],
                                     cwd=root, text=True, capture_output=True)
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             with zipfile.ZipFile(archive) as bundle:
@@ -141,6 +144,21 @@ class DeliveryContractTests(unittest.TestCase):
         self.assertNotIn("意向程度", report)
         self.assertIn("补充你想做的词", report)
 
+    def test_all_profile_outputs_reject_short_mode(self):
+        for mode in ("仅画像模式", "完整模式"):
+            with self.subTest(mode=mode):
+                company = load_json("complete-v4-company.json")
+                company["geo_preferences"] = {
+                    "output_mode": mode,
+                    "delivery_mode": "简约版",
+                    "approved_keywords": [company["company_name"]],
+                }
+                with self.assertRaisesRegex(StandardPathBlocked, "每项800–1000字"):
+                    StandardPathPipeline().run(load_json("geo-bd-handoff-v1.json"), company)
+                report, _ = self.report(mode)
+                with self.assertRaisesRegex(ValueError, "每项800–1000字"):
+                    validate_delivery(report, mode, "简约版")
+
     def test_profile_gate_rejects_missing_unknown_excluded_and_cross_business_selection(self):
         for mode in ("仅画像模式", "完整模式"):
             for approved, extra in (
@@ -154,7 +172,8 @@ class DeliveryContractTests(unittest.TestCase):
                 with self.subTest(mode=mode, approved=approved):
                     company = load_json("complete-v4-company.json")
                     company["geo_preferences"] = {
-                        "output_mode": mode, "approved_keywords": approved, "delivery_mode": "简约版", **extra,
+                        "output_mode": mode, "approved_keywords": approved, "delivery_mode": "完整版",
+                        "complete_personas": {name: "仅用于字数验收的合成文本。" * 70 for name in PERSONA_UNITS}, **extra,
                     }
                     with self.assertRaises(StandardPathBlocked):
                         StandardPathPipeline().run(load_json("geo-bd-handoff-v1.json"), company)
@@ -192,7 +211,7 @@ class DeliveryContractTests(unittest.TestCase):
             if item["keyword"] not in approved:
                 self.assertNotIn(f"| {item['keyword']} |", section)
         with self.assertRaises(ValueError):
-            validate_delivery(report.replace("本轮已选词：", "未确认词："), "完整模式", "简约版")
+            validate_delivery(report.replace("本轮已选词：", "未确认词："), "完整模式", "完整版")
 
     def test_selection_without_profile_request_only_asks_for_scope(self):
         company = load_json("complete-v4-company.json")
@@ -219,10 +238,13 @@ class DeliveryContractTests(unittest.TestCase):
         self.assertIn(f"| {word} | 设备采购报价 |", report)
         self.assertEqual(added["intent_level"], "高意向")
         self.assertNotIn("高意向", report)
-        company["geo_preferences"].update({"output_mode": "仅画像模式", "delivery_mode": "简约版"})
+        company["geo_preferences"].update({"output_mode": "仅画像模式", "delivery_mode": "完整版"})
         with self.assertRaises(StandardPathBlocked):
             StandardPathPipeline().run(load_json("geo-bd-handoff-v1.json"), company)
         company["geo_preferences"]["approved_keywords"] = [word]
+        company["geo_preferences"]["complete_personas"] = {
+            name: "仅用于字数验收的合成文本。" * 70 for name in PERSONA_UNITS
+        }
         report, artifacts = self.report("仅画像模式", company)
         self.assertIn(f"本轮已选词：{word}。", report)
         chosen = next(item for item in artifacts["keyword_matrix"]["keywords"] if item["keyword"] == word)

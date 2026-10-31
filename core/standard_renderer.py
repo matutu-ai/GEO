@@ -130,13 +130,9 @@ def render_standard(output_dir, artifacts):
             raise ValueError("STANDARD_RENDER-004: persona names must match the fixed nine sections")
         for index, name in enumerate(names, start=1):
             persona = by_name[name]
-            uncertain_vertical = bool(vertical) and delivery_mode == "简约版"
-            summary = (
-                "【需确认本板块资料与指定业务的关联】"
-                if uncertain_vertical else _persona_summary(persona, delivery_mode == "完整版")
-            )
+            summary = _persona_summary(persona, True)
             slots[f"persona_{index}"] = _cell(summary)
-            if uncertain_vertical or persona["status"] != "READY":
+            if persona["status"] != "READY":
                 notes.append(f"{persona['name']}：待补对应业务的已确认资料。")
     slots["missing"] = "\n".join(f"- {note}" for note in dict.fromkeys(notes)) or "暂无待补资料。"
     report = re.sub(r"\{\{(\w+)\}\}", lambda match: slots[match[1]], template)

@@ -29,6 +29,8 @@ def validate_delivery(text, output_mode="仅词模式", delivery_mode="完整版
     template = delivery_template(output_mode)
     if delivery_mode not in DELIVERY_MODES:
         raise ValueError("DELIVERY-002: 未知画像详略")
+    if output_mode != "仅词模式" and delivery_mode != "完整版":
+        raise ValueError("DELIVERY-002: 所有画像必须使用完整版，每项800–1000字")
     expected = re.findall(r"^#{2,6} .+$", template, re.M)
     actual = re.findall(r"^#{2,6} .+$", text, re.M)
     if actual != expected or len(re.findall(r"^# .+$", text, re.M)) != 1:
@@ -61,8 +63,8 @@ def validate_delivery(text, output_mode="仅词模式", delivery_mode="完整版
             if not body.strip():
                 raise ValueError("DELIVERY-009: 画像板块为空，简约版缺项应写待补")
             length = len("".join(body.replace("\\|", "|").split()))
-            if delivery_mode == "完整版" and not 800 <= length <= 1000:
-                raise ValueError(f"DELIVERY-010: 完整版每项必须800–1000字，当前{length}字")
+            if not 800 <= length <= 1000:
+                raise ValueError(f"DELIVERY-010: 每项画像必须800–1000字，当前{length}字")
 
 
 def main():

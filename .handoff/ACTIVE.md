@@ -1,8 +1,8 @@
 # Active Task
 
-- Current task: 2026-10-23 GEO Skill 4.7.0跨 AI 使用说明与完整包同步。
-- Objective: 明确其他 AI 按同一规则使用 GEO 库的导入方法、必读文件和一致性边界。
-- Current progress: 已更新 Skill 入口、快速路由、README 和打包清单；新增跨 AI 使用说明，已打包并安装本机 Skill。
+- Current task: 无进行中的实现任务；GEO Skill 4.9.0九项画像统一字数规则已实施。
+- Objective: 后续品牌画像和垂直业务画像均固定九项，每项800–1000字。
+- Current progress: Standard 画像输出拒绝简约版；规则、模板、校验脚本、本机 Skill 与分发包已更新。
 - Current blocker: 无。
-- Verification: Skill 源码与已安装包 quick_validate 均通过；9 文件打包/逐文件核对通过；全库 94 项测试中 4 项关键词/业务归属测试失败，详见 handoff.md；git diff --check 通过。
-- Exact next action: 完成本次变更审阅、提交并推送 GitHub，核对本地与 origin/main 一致。
+- Verification: 本轮3项关键测试通过；9文件包校验和Skill quick_validate通过。较广测试中仍有既有关键词断言失败，见 handoff.md。
+- Exact next action: 等待下一项任务；画像交付统一九项每项800–1000字。
