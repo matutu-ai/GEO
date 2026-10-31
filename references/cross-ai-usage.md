@@ -4,7 +4,7 @@
 
 ## 推荐导入方式
 
-1. 将 `output/geo-keyword-persona-4.7.0.zip` 解压后，把完整 `geo-keyword-persona/` 文件夹上传或导入目标 AI 的项目知识库/自定义指令。若平台接受 ZIP，可直接上传；若不能读取压缩包，先解压再上传。
+1. 将 `output/geo-keyword-persona-4.8.0.zip` 解压后，把完整 `geo-keyword-persona/` 文件夹上传或导入目标 AI 的项目知识库/自定义指令。若平台接受 ZIP，可直接上传；若不能读取压缩包，先解压再上传。
 2. 告诉 AI：把 `SKILL.md` 作为主规则；按其中引用读取 `templates/delivery.md`、`references/keyword-rules.md`、`references/template-guide.md`、`references/article-training.md` 和 `prompts/standard/00_quick_start.md`。不要调用 Legacy 文件，除非用户明确要求旧版 V4。
 3. 每次开始新客户任务时，提示 AI 按 Standard 两阶段流程执行：先根据已确认资料推荐四类词，等用户选词和画像范围后，再生成品牌画像或指定业务画像；画像交付后给出词包训练建议并等待用户选择。
 4. 资料持续对话期间，将已确认客户资料与用户选定的词保留在同一对话/项目上下文。换新对话时，重新提供资料和用户已确认选择；不要假设模型记得上一轮。
